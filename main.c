@@ -6,6 +6,7 @@
  */ 
 
 #include <avr/io.h>
+#include "CommonDefinitions.h"
 #include "LCD_Ili9341.h"
 #include "config.h"
 #include "systime.h"
@@ -17,24 +18,27 @@
 #include "CIRC_BUFF.h"
 #include "UART0.h"
 #include "motor.h"
-
-#define NUMBER_OF_BYTES	10
+#include "modeVCV.h"
 
 int main(void)
 {
 	uint8_t msg[50],*p_msg;
 	uint16_t *ADC_Results;
 	uint32_t	mark1=0;
-	uint8_t dihanje_state = 0;
-	uint16_t timer_10ms;
+	uint8_t	operationMode=MODE_DEFAULT;
 	
-	// 5 ms je time slice
-	uint8_t Settings_rampup=20;	// 50ms
-	uint16_t Settings_vdih_t=250; // 1.25s
-	uint16_t Settings_izdih_t=600;	//3s
-	uint16_t Settings_volume_t=250;	//500 ml
-	
+	RespSettings_t	Settings;
 	uint16_t Flow, Pressure, Volume;
+	
+	//V konèni verziji se to prebere iz eeproma, 
+	//da takoj nadaljujemo od koder smo konèali,
+	//èe se sluèajno pobiramo iz nenamernega reseta
+	Settings.current_mode=MODE_STOP;	
+	Settings.new_mode=MODE_DEFAULT;
+	Settings.rampup=SETTINGS_DEFAULT_RAMPUP_TIME_MS;
+	Settings.vdih_t=SETTINGS_DEFAULT_INHALE_TIME_MS;
+	Settings.izdih_t=SETTINGS_DEFAULT_EXHALE_TIME_MS;
+	Settings.volume_t=SETTINGS_DEFAULT_VOLUME_ML;
 		
 	LED_Init();
 	ADC_Init();
@@ -49,68 +53,17 @@ int main(void)
 		if (Has_X_MillisecondsPassed(5,&mark1))
 		{
 			// branje ADC:
-			Flow = *(ADC_Results++);
-			Pressure = *(ADC_Results);
+			Flow = *(ADC_Results+ADC_CH_FLOW);
+			Pressure = *(ADC_Results+ADC_CH_PRESSURE);
 			Volume = motor_GetPosition();
 						
-			// dihanje
-			switch (dihanje_state)
+			switch (operationMode)
 			{
-				case 0: // za?etek vdiha, preveri, ce so klesce narazen, sicer jih daj narazen
-					motor_SetDirIzdih();
-					motor_SetDutyCycle(200);
-					dihanje_state++;
-				break;
-				
-				case 1: // cakaj, da so klesce narazen
-					if (motor_GetPosition()<MOTOR_POS_MIN)
-					{
-						motor_SetDutyCycle(0);
-						dihanje_state++;
-					}	
-				break;
-				
-				case 2: //zacni ramp-up
-					motor_SetDirVdih();
-					motor_SetDutyCycle(1023);
-					dihanje_state++;
-					timer_10ms = 0;
-				break;
-				
-				case 3: //ramp-up
-					timer_10ms++;
-					if (timer_10ms >= Settings_rampup)	// gremo v constant pressure
-					{
-						timer_10ms = 0;
-						dihanje_state++;
-						motor_SetDutyCycle(1023);
-					}
-				break;
-				
-				case 4: //constant pressure
-					timer_10ms++;
-					if (motor_GetPosition()>=Settings_volume_t || timer_10ms > Settings_vdih_t) // izdih
-					{
-						timer_10ms = 0;
-						dihanje_state++;
-						motor_SetDutyCycle(300);
-						motor_SetDirIzdih();
-					}
-				break;
-				
-				case 5: //izdih
-					timer_10ms++;
-					if (motor_GetPosition()<MOTOR_POS_MIN) motor_SetDutyCycle(0);	//konec izdiha
-					if (timer_10ms > Settings_izdih_t)	// izdih
-					{
-						dihanje_state=0;
-						motor_SetDutyCycle(0);
-					}
-				break;
-				
-				default:
-					motor_SetDutyCycle(0);
-				break;
+				case MODE_DEFAULT: modeVCV(Flow,Pressure,Volume, &Settings); break;
+				default: 
+					//printf("Error");
+					operationMode = MODE_DEFAULT;
+					break;
 			}
 			
 			
@@ -122,7 +75,7 @@ int main(void)
 			*p_msg = 0x55;
 			p_msg++;
 			
-			*p_msg = NUMBER_OF_BYTES;
+			*p_msg = MSG_CORE_LENGTH;
 			p_msg++;
 			
 			*(uint32_t *)p_msg = GetSysTick();
@@ -140,7 +93,7 @@ int main(void)
 			*(p_msg) = 0xAA;
 
 			//STX+N+TIMESTAMP+4xADC+ETX
-			UART0_SendBytes((char*)msg,1+1+NUMBER_OF_BYTES+1);
+			UART0_SendBytes((char*)msg,1+1+MSG_CORE_LENGTH+1);
 			LED1_Off();
 		}
 	}

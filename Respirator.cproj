@@ -30,15 +30,15 @@
     <EraseKey />
     <AsfFrameworkConfig>
       <framework-data>
-  <options />
-  <configurations />
-  <files />
-  <documentation help="" />
-  <offline-documentation help="" />
-  <dependencies>
-    <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.34.1" />
-  </dependencies>
-</framework-data>
+        <options />
+        <configurations />
+        <files />
+        <documentation help="" />
+        <offline-documentation help="" />
+        <dependencies>
+          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.34.1" />
+        </dependencies>
+      </framework-data>
     </AsfFrameworkConfig>
     <avrtool>com.atmel.avrdbg.tool.avrdragon</avrtool>
     <avrtoolserialnumber>00A200018065</avrtoolserialnumber>
@@ -148,6 +148,9 @@
     <Compile Include="CIRC_BUFF.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="CommonDefinitions.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="config.h">
       <SubType>compile</SubType>
     </Compile>
@@ -164,6 +167,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="main.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="modeVCV.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="modeVCV.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="motor.c">
