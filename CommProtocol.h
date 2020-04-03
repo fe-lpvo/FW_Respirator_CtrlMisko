@@ -10,6 +10,7 @@
 #define COMMPROTOCOL_H_
 
 #include "CommonDefinitions.h"
+#include "ErrorHandling.h"
 #include "UART0.h"	//No IRQs?
 #include "GPIO.h"
 
