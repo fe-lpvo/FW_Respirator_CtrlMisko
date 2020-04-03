@@ -16,13 +16,12 @@
 #include "PID.h"
 #include "ADC.h"
 #include "CIRC_BUFF.h"
-#include "UART0.h"
+#include "CommProtocol.h"
 #include "motor.h"
 #include "modeVCV.h"
 
 int main(void)
 {
-	uint8_t msg[50],*p_msg;
 	uint16_t *ADC_Results;
 	uint32_t	mark1=0;
 	uint8_t	operationMode=MODE_DEFAULT;
@@ -59,42 +58,18 @@ int main(void)
 						
 			switch (operationMode)
 			{
-				case MODE_DEFAULT: modeVCV(Flow,Pressure,Volume, &Settings); break;
+				case MODE_STOP: break;
+				case MODE_VCV:  modeVCV(Flow,Pressure,Volume, &Settings); break;
+//				case MODE_PCV:  modeVCV(Flow,Pressure,Volume, &Settings); break;
+//				case MODE_CPAP: modeVCV(Flow,Pressure,Volume, &Settings); break;
 				default: 
 					//printf("Error");
 					operationMode = MODE_DEFAULT;
 					break;
 			}
-			
-			
 			//koda traja 140 us
-			LED1_Tgl();
-			p_msg = msg;
 			ADC_Results = ADC_results_p();	//Zakaj se ta pointer vsakic na novo prebere?
-			
-			*p_msg = 0x55;
-			p_msg++;
-			
-			*p_msg = MSG_CORE_LENGTH;
-			p_msg++;
-			
-			*(uint32_t *)p_msg = GetSysTick();
-			p_msg +=4;
-			
-			*(uint16_t *)p_msg = Flow;
-			p_msg +=2;
-			
-			*(uint16_t *)p_msg = Pressure;
-			p_msg +=2;
-			
-			*(uint16_t *)p_msg = Volume;
-			p_msg +=2;
-			
-			*(p_msg) = 0xAA;
-
-			//STX+N+TIMESTAMP+4xADC+ETX
-			UART0_SendBytes((char*)msg,1+1+MSG_CORE_LENGTH+1);
-			LED1_Off();
+			SendStatus(GetSysTick(), Flow, Pressure, Volume);	//To trenutno dela brez prekinitev!
 		}
 	}
 }

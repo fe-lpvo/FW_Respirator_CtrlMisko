@@ -151,6 +151,12 @@
     <Compile Include="CommonDefinitions.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="CommProtocol.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="CommProtocol.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="config.h">
       <SubType>compile</SubType>
     </Compile>
