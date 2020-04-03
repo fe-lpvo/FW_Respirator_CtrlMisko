@@ -160,6 +160,12 @@
     <Compile Include="config.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="ErrorHandling.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="ErrorHandling.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="GPIO.c">
       <SubType>compile</SubType>
     </Compile>

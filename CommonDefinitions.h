@@ -9,7 +9,7 @@
 #ifndef COMMON_DEFINITIONS_H_
 #define COMMON_DEFINITIONS_H_
 
-#include <avr/io.h>
+#include <inttypes.h>
 //#include "config.h"
 
 //app defines
@@ -29,6 +29,16 @@
 #define SETTINGS_DEFAULT_EXHALE_TIME_MS		3000/TIME_SLICE_MS	//3s
 #define SETTINGS_DEFAULT_VOLUME_ML			250					//500 mililiters?
 
+//settings limits
+#define SETTINGS_RAMPUP_MIN			50
+#define SETTINGS_RAMPUP_MAX			200
+#define SETTINGS_INHALE_TIME_MIN	100
+#define SETTINGS_INHALE_TIME_MAX	2000
+#define SETTINGS_EXHALE_TIME_MIN	100
+#define SETTINGS_EXHALE_TIME_MAX	10000
+#define SETTINGS_VOLUME_MIN			100
+#define SETTINGS_VOLUME_MAX			1000
+
 //Settings
 typedef struct RESPIRATOR_SETTINGS{
 	uint8_t current_mode;
@@ -38,9 +48,6 @@ typedef struct RESPIRATOR_SETTINGS{
 	uint16_t izdih_t;
 	uint16_t volume_t;
 } RespSettings_t;
-
-//All Error codes
-
 
 
 
