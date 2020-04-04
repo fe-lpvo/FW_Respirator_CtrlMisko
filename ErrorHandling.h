@@ -10,6 +10,7 @@
 #define ERRORHANDLING_H_
 
 #include <inttypes.h>
+#include <stddef.h>
 
 #define USE_DEFAULT_ERROR_REPORTER	1
 //Default Error reporter just stores errors in an Error Queue
@@ -33,7 +34,15 @@ typedef enum ErrCodes
 	ComRxRampOutsideLimits = 0x21,
 	ComRxInhaleOutsideLimits = 0x22,
 	ComRxExhaleOutsideLimits = 0x23,
-	ComRxVolumeOutsideLimits = 0x24
+	ComRxVolumeOutsideLimits = 0x24,
+	ActuatorCtrlUnknownMode = 0x30,
+	ModeUnknownMode = 0x40,
+	ModeC_VCV_UnknownState = 0x41,
+	ModeC_PCV_UnknownState = 0x42,
+	ModeAC_VCV_UnknownState = 0x43,
+	ModeAC_PCV_UnknownState = 0x44,
+	ModeCPAP_UnknownState = 0x45,
+	Limits_InsufficientVolume = 0x50
 } ErrCodes_t;
 
 #define ERROR_QUEUE_LENGTH	50

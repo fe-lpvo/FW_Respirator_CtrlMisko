@@ -10,9 +10,10 @@
 #define MODEVCV_H_
 
 #include "CommonDefinitions.h"
+#include "ErrorHandling.h"
 #include "motor.h"
 #include "ADC.h"
 
-void modeC_VCV(uint16_t Flow, uint16_t Pressure, uint16_t Volume, RespSettings_t* Settings);
+void modeC_VCV(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams_t* Control);
 
 #endif /* MODEVCV_H_ */

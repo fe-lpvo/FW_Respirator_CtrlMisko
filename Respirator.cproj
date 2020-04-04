@@ -136,6 +136,12 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ActuatorControl.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="ActuatorControl.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="ADC.c">
       <SubType>compile</SubType>
     </Compile>

@@ -18,7 +18,9 @@
 #include "CIRC_BUFF.h"
 #include "CommProtocol.h"
 #include "motor.h"
+#include "ActuatorControl.h"
 #include "modeC_VCV.h"
+
 
 int main(void)
 {
@@ -29,7 +31,8 @@ int main(void)
 	uint8_t	operationMode=MODE_DEFAULT;
 	
 	RespSettings_t	Settings;
-	uint16_t Flow, Pressure, Volume;
+	MeasuredParams_t Measured;
+	CtrlParams_t Control;
 	
 	//V konèni verziji se to prebere iz eeproma, 
 	//da takoj nadaljujemo od koder smo konèali,
@@ -60,37 +63,36 @@ int main(void)
 		if (Has_X_MillisecondsPassed(5,&mark1))
 		{
 			// branje ADC:
-			Flow = *(ADC_Results+ADC_CH_FLOW);
-			Pressure = *(ADC_Results+ADC_CH_PRESSURE);
-			Volume = motor_GetPosition();
+			Measured.flow = *(ADC_Results+ADC_CH_FLOW);
+			Measured.pressure = *(ADC_Results+ADC_CH_PRESSURE);
+			Measured.volume_t = motor_GetPosition();
 						
+			//TODO: mode state machines must return HW independent control values
 			switch (operationMode)
 			{
-//				case MODE_STOP: break;
-				case MODE_C_VCV: modeC_VCV(Flow,Pressure,Volume, &Settings); break;
-//				case MODE_C_PCV: modeC_PCV(Flow,Pressure,Volume, &Settings); break;
-//				case MODE_CPAP:	 modeCPAP( Flow,Pressure,Volume, &Settings); break;
+//				case MODE_STOP:   break;
+				case MODE_C_VCV:  modeC_VCV(&Settings, &Measured, &Control); break;
+//				case MODE_C_PCV:  break;
+//				case MODE_AC_VCV:  break;
+//				case MODE_AC_PCV:  break;
+//				case MODE_CPAP:	  break;
 				default: 
-					//printf("Error");
+					ReportError(ModeUnknownMode,NULL/*"Unknown operation mode"*/);
 					operationMode = MODE_DEFAULT;
 					break;
 			}
-			//TODO: Get hardware abstracted actuation values from the mode state machine 
-			//and execute them here
-			
-			//MotorControl(some settings);
-			//ValveControl(some more settings);
-			//etc...
-			
+			ActuatorControl(&Control);
 			//koda traja xy us (140 us before hardware abstraction was implemented)
 			
 			//ADC_Results = ADC_results_p();	//Zakaj se ta pointer vsakic na novo prebere?
 			
 			//Report Status to the GUI
 			LED1_On();
-			length=PrepareStatusMessage(GetSysTick(), Flow, Pressure, Volume, msg);	//To trenutno dela brez prekinitev!
+			length=PrepareStatusMessage(GetSysTick(), Measured.flow,\
+							Measured.pressure, Measured.volume_t, msg);
 			UART0_SendBytes(msg,length);
 			LED1_Off();
 		}
 	}
 }
+

@@ -21,67 +21,82 @@ void modeVCVstop()
 
 }*/
 
-void modeC_VCV(uint16_t Flow, uint16_t Pressure, uint16_t Volume, RespSettings_t* Settings)
+void modeC_VCV(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams_t* Control)
 {
 	static uint8_t dihanje_state = 0;
-	static uint16_t timer_10ms;
+	static uint16_t InspiratoryTiming;
+	static uint16_t ExpiratoryTiming;
 
 	switch (dihanje_state)
 	{
-		case 0: // za?etek vdiha, preveri, ce so klesce narazen, sicer jih daj narazen
-		motor_SetDirIzdih();
-		motor_SetDutyCycle(200);
+		case 0: // zacetek vdiha, preveri, ce so klesce narazen, sicer jih daj narazen
+		Control->mode = CTRL_PAR_MODE_TARGET_POSITION;
+		Control->target_position  = 0;
 		dihanje_state++;
 		break;
 					
 		case 1: // cakaj, da so klesce narazen
-		if (motor_GetPosition()<MOTOR_POS_MIN)
+		if (Control->mode == CTRL_PAR_MODE_STOP)
 		{
-			motor_SetDutyCycle(0);
 			dihanje_state++;
 		}
 		break;
 					
 		case 2: //zacni ramp-up
-		motor_SetDirVdih();
-		motor_SetDutyCycle(1023);
+		Control->mode=CTRL_PAR_MODE_TARGET_SPEED;
+		Control->target_speed = 1023;
+		InspiratoryTiming = 0;
 		dihanje_state++;
-		timer_10ms = 0;
 		break;
 					
 		case 3: //ramp-up
-		timer_10ms++;
-		if (timer_10ms >= Settings->P_ramp)	// gremo v constant pressure
+		InspiratoryTiming+= TIME_SLICE_MS;
+		//TODO: Tu kaj reguliramo? V konèni fazi bo verjetno treba
+		//...
+		if (InspiratoryTiming >= Settings->P_ramp)	// gremo v constant pressure
 		{
-			timer_10ms = 0;
+			//InspiratoryTiming = 0; //Smatram da nastavitev za inspiratory timing vkljuèuje P_ramp time
 			dihanje_state++;
-			motor_SetDutyCycle(1023);
 		}
 		break;
 					
 		case 4: //constant pressure
-		timer_10ms++;
-		if (motor_GetPosition()>=Settings->volume_t || timer_10ms > Settings->inspiratory_t) // izdih
+		InspiratoryTiming+=TIME_SLICE_MS;
+		//TODO: regulate pressure, adjust target pressure from cycle to cycle to achieve desired volume
+		
+		//Detect end condition of inspiratory cycle
+		if ( (Measured->volume_t >= Settings->volume_t) || 
+			 (InspiratoryTiming > Settings->inspiratory_t))
 		{
-			timer_10ms = 0;
+			ExpiratoryTiming = 0;
 			dihanje_state++;
-			motor_SetDutyCycle(300);
-			motor_SetDirIzdih();
+			Control->mode=CTRL_PAR_MODE_TARGET_SPEED;
+			Control->target_speed = -300;
 		}
+		if (Control->mode == CTRL_PAR_MODE_STOP)	//Error ! Motor reached max position befor inspiration completed
+		{
+			ReportError(Limits_InsufficientVolume,NULL/*"Error! Target Volume could not be reached"*/);
+			ExpiratoryTiming = 0;
+			dihanje_state++;
+			Control->mode=CTRL_PAR_MODE_TARGET_SPEED;
+			Control->target_speed = -300;
+		}
+
 		break;
 					
 		case 5: //izdih
-		timer_10ms++;
-		if (motor_GetPosition()<MOTOR_POS_MIN) motor_SetDutyCycle(0);	//konec izdiha
-		if (timer_10ms > Settings->expiratory_t)	// izdih
+		ExpiratoryTiming+=TIME_SLICE_MS;
+		if (InspiratoryTiming > Settings->expiratory_t)	// izdih
 		{
 			dihanje_state=0;
-			motor_SetDutyCycle(0);
+//			Control->mode = CTRL_PAR_MODE_STOP;	//should not be needed
 		}
 		break;
-					
+
 		default:
-		motor_SetDutyCycle(0);
+		ReportError(ModeC_VCV_UnknownState,NULL/*"Error: Unknown state in C_VCV state machine"*/);
+		motor_SetDutyCycle(0);	
+		dihanje_state = 0;
 		break;
 	}
 

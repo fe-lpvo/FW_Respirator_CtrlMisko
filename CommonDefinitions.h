@@ -26,10 +26,10 @@
 
 //default settings
 #define SETTINGS_DEFAULT_MODE				MODE_DEFAULT
-#define SETTINGS_DEFAULT_RAMPUP_TIME_MS		100/TIME_SLICE_MS	// 50ms	???	100ms/TIME_SLICE_MS?
-#define SETTINGS_DEFAULT_INHALE_TIME_MS		1250/TIME_SLICE_MS	// 1.25s
-#define SETTINGS_DEFAULT_EXHALE_TIME_MS		3000/TIME_SLICE_MS	//3s
-#define SETTINGS_DEFAULT_VOLUME_ML			250					//500 mililiters?
+#define SETTINGS_DEFAULT_RAMPUP_TIME_MS		100		// 50ms	???	100ms/TIME_SLICE_MS?
+#define SETTINGS_DEFAULT_INHALE_TIME_MS		1250	// 1.25s
+#define SETTINGS_DEFAULT_EXHALE_TIME_MS		3000	//3s
+#define SETTINGS_DEFAULT_VOLUME_ML			250		//500 mililiters?
 
 //settings limits
 #define SETTINGS_RAMPUP_MIN			50
@@ -49,6 +49,7 @@ typedef struct RESPIRATOR_SETTINGS{
 	uint16_t inspiratory_t;
 	uint16_t expiratory_t;
 	uint16_t volume_t;
+	uint16_t PeakInspPressure;
 } RespSettings_t;
 
 //Measured Parameters
@@ -60,13 +61,21 @@ typedef struct MEASURED_PARAMS{
 
 
 //Control Parameters
-#define CTRL_PAR_MODE_TARGET_SPEED		0
-#define CTRL_PAR_MODE_TARGET_POSITION	1
+#define CTRL_PAR_MODE_STOP				0
+#define CTRL_PAR_MODE_TARGET_SPEED		1
+#define CTRL_PAR_MODE_TARGET_POSITION	2
+
+#define CTRL_PAR_MAX_POSITION	1023
+#define CTRL_PAR_MIN_POSITION	0
 
 typedef struct CONTROL_PARAMS{
 	uint8_t mode;		//regulate speed/position
-	int16_t	speed;		//max: +-1023
-	int16_t position;	//max: +-1023
+	int16_t	target_speed;		//max: +-1023, positive value = ispiration
+	int16_t target_position;	//max: +-1023, 0 = completely exhaled, theoretically should not go below 0
+	int16_t cur_speed;
+	int16_t cur_position;
+	int16_t last_position;
+	int16_t max_speed;	//0-1023 speed limit for target position mode - not yet used / does it make sense?
 } CtrlParams_t;
 
 
