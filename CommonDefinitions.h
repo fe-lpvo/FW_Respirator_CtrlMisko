@@ -51,6 +51,24 @@ typedef struct RESPIRATOR_SETTINGS{
 	uint16_t volume_t;
 } RespSettings_t;
 
+//Measured Parameters
+typedef struct MEASURED_PARAMS{
+	int16_t flow;
+	int16_t pressure;
+	int16_t volume_t;
+} MeasuredParams_t;
+
+
+//Control Parameters
+#define CTRL_PAR_MODE_TARGET_SPEED		0
+#define CTRL_PAR_MODE_TARGET_POSITION	1
+
+typedef struct CONTROL_PARAMS{
+	uint8_t mode;		//regulate speed/position
+	int16_t	speed;		//max: +-1023
+	int16_t position;	//max: +-1023
+} CtrlParams_t;
+
 
 
 #endif /* COMMON_DEFINITIONS_H_ */
