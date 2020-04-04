@@ -6,7 +6,7 @@
  */ 
 //Opisi mode, da vemo kaj pocnemo
 
-#include "modeVCV.h"
+#include "modeC_VCV.h"
 
 //Verjetno bo treba postopno zagnat vsak mode in ga tudi ugasnit
 //mogoèe bolj smiselno, da so to deli state machine?
@@ -21,7 +21,7 @@ void modeVCVstop()
 
 }*/
 
-void modeVCV(uint16_t Flow, uint16_t Pressure, uint16_t Volume, RespSettings_t* Settings)
+void modeC_VCV(uint16_t Flow, uint16_t Pressure, uint16_t Volume, RespSettings_t* Settings)
 {
 	static uint8_t dihanje_state = 0;
 	static uint16_t timer_10ms;
@@ -51,7 +51,7 @@ void modeVCV(uint16_t Flow, uint16_t Pressure, uint16_t Volume, RespSettings_t* 
 					
 		case 3: //ramp-up
 		timer_10ms++;
-		if (timer_10ms >= Settings->rampup)	// gremo v constant pressure
+		if (timer_10ms >= Settings->P_ramp)	// gremo v constant pressure
 		{
 			timer_10ms = 0;
 			dihanje_state++;
@@ -61,7 +61,7 @@ void modeVCV(uint16_t Flow, uint16_t Pressure, uint16_t Volume, RespSettings_t* 
 					
 		case 4: //constant pressure
 		timer_10ms++;
-		if (motor_GetPosition()>=Settings->volume_t || timer_10ms > Settings->vdih_t) // izdih
+		if (motor_GetPosition()>=Settings->volume_t || timer_10ms > Settings->inspiratory_t) // izdih
 		{
 			timer_10ms = 0;
 			dihanje_state++;
@@ -73,7 +73,7 @@ void modeVCV(uint16_t Flow, uint16_t Pressure, uint16_t Volume, RespSettings_t* 
 		case 5: //izdih
 		timer_10ms++;
 		if (motor_GetPosition()<MOTOR_POS_MIN) motor_SetDutyCycle(0);	//konec izdiha
-		if (timer_10ms > Settings->izdih_t)	// izdih
+		if (timer_10ms > Settings->expiratory_t)	// izdih
 		{
 			dihanje_state=0;
 			motor_SetDutyCycle(0);

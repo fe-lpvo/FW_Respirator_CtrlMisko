@@ -181,10 +181,10 @@
     <Compile Include="main.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="modeVCV.c">
+    <Compile Include="modeC_VCV.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="modeVCV.h">
+    <Compile Include="modeC_VCV.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="motor.c">
@@ -205,10 +205,10 @@
     <Compile Include="systime.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="UART0.c">
+    <Compile Include="UART0_IRQ.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="UART0.h">
+    <Compile Include="UART0_IRQ.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="ugui.c">

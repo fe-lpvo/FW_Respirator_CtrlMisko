@@ -13,6 +13,6 @@
 #include "motor.h"
 #include "ADC.h"
 
-void modeVCV(uint16_t Flow, uint16_t Pressure, uint16_t Volume, RespSettings_t* Settings);
+void modeC_VCV(uint16_t Flow, uint16_t Pressure, uint16_t Volume, RespSettings_t* Settings);
 
 #endif /* MODEVCV_H_ */

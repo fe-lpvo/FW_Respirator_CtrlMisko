@@ -18,9 +18,11 @@
 
 #define MODE_DEFAULT	1	//Kateri je default?
 #define MODE_STOP	0
-#define MODE_VCV	1		
-#define MODE_PCV	2
-#define MODE_CPAP	3
+#define MODE_C_VCV	1		
+#define MODE_C_PCV	2
+#define MODE_AC_VCV	3
+#define MODE_AC_PCV	4
+#define MODE_CPAP	5
 
 //default settings
 #define SETTINGS_DEFAULT_MODE				MODE_DEFAULT
@@ -43,9 +45,9 @@
 typedef struct RESPIRATOR_SETTINGS{
 	uint8_t current_mode;
 	uint8_t	new_mode;		//If new_mode is different than current mode, do transition
-	uint8_t rampup;
-	uint16_t vdih_t;
-	uint16_t izdih_t;
+	uint8_t P_ramp;
+	uint16_t inspiratory_t;
+	uint16_t expiratory_t;
 	uint16_t volume_t;
 } RespSettings_t;
 
