@@ -14,7 +14,7 @@
 #include "UART0.h"	//No IRQs?
 #include "GPIO.h"
 
-void SendStatus(uint32_t timestamp, uint16_t Flow, uint16_t Pressure, uint16_t Volume);
+int PrepareStatusMessage(uint32_t timestamp, uint16_t Flow, uint16_t Pressure, uint16_t Volume, char *p_msg);
 
 
 #endif /* COMMPROTOCOL_H_ */

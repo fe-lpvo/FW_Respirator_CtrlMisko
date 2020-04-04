@@ -6,13 +6,9 @@
  */ 
 #include "CommProtocol.h"
 
-void SendStatus(uint32_t timestamp, uint16_t Flow, uint16_t Pressure, uint16_t Volume)
+int PrepareStatusMessage(uint32_t timestamp, uint16_t Flow, uint16_t Pressure, uint16_t Volume, char *p_msg)
 {
-	uint8_t msg[50],*p_msg;
-
-	LED1_Tgl();
-	p_msg = msg;
-				
+	//STX+N+TIMESTAMP+4xADC+ETX
 	*p_msg = 0x55;
 	p_msg++;
 				
@@ -33,9 +29,7 @@ void SendStatus(uint32_t timestamp, uint16_t Flow, uint16_t Pressure, uint16_t V
 				
 	*(p_msg) = 0xAA;
 
-	//STX+N+TIMESTAMP+4xADC+ETX
-	UART0_SendBytes((char*)msg,1+1+MSG_CORE_LENGTH+1);
-	LED1_Off();
+	return (1+1+MSG_CORE_LENGTH+1);
 }
 
 //Protocol definition
@@ -45,8 +39,8 @@ void SendStatus(uint32_t timestamp, uint16_t Flow, uint16_t Pressure, uint16_t V
 //PARAM:
 //	'M' = mode ('0'-stop, 'V'-VCV, 'P'-PCV, 'C'-CPAP)
 //	'R' = rampup (50 - 200) ms
-//  'I' = inhale (???) ms
-//	'E' = exhale (???) ms
+//  'I' = inspiratory time (???) ms
+//	'E' = expiratory time (???) ms
 //	'V' = volume (100-1000) ml
 //
 //Example:
@@ -102,8 +96,8 @@ void ProcessMessages(char data, RespSettings_t* Settings)
 				switch (data)
 				{
 					case '0': value = MODE_STOP; state++; break;
-					case 'V': value = MODE_VCV; state++; break;
-					case 'P': value = MODE_PCV; state++; break;
+					case 'V': value = MODE_C_VCV; state++; break;
+					case 'P': value = MODE_C_PCV; state++; break;
 					case 'C': value = MODE_CPAP; state++; break;
 					default:
 					ReportError(ComRxUnknownMode,NULL/*"Unknown mode received"*/);
@@ -130,13 +124,13 @@ void ProcessMessages(char data, RespSettings_t* Settings)
 			{
 				switch (param){
 					case 'M': Settings->new_mode = value; break;
-					case 'R': if ((value >= SETTINGS_RAMPUP_MIN) && (value <= SETTINGS_RAMPUP_MAX)) Settings->rampup=value;
+					case 'R': if ((value >= SETTINGS_RAMPUP_MIN) && (value <= SETTINGS_RAMPUP_MAX)) Settings->P_ramp=value;
 							  else ReportError(ComRxRampOutsideLimits,NULL/*"Received rampup value outside limits"*/);
 							  break;
-					case 'I': if ((value >= SETTINGS_INHALE_TIME_MIN) && (value <= SETTINGS_INHALE_TIME_MAX)) Settings->vdih_t=value;
+					case 'I': if ((value >= SETTINGS_INHALE_TIME_MIN) && (value <= SETTINGS_INHALE_TIME_MAX)) Settings->inspiratory_t=value;
 								else ReportError(ComRxRampOutsideLimits,NULL/*"Received rampup value outside limits"*/);
 								break;
-					case 'E': if ((value >= SETTINGS_EXHALE_TIME_MIN) && (value <= SETTINGS_EXHALE_TIME_MAX)) Settings->izdih_t=value;
+					case 'E': if ((value >= SETTINGS_EXHALE_TIME_MIN) && (value <= SETTINGS_EXHALE_TIME_MAX)) Settings->expiratory_t=value;
 								else ReportError(ComRxRampOutsideLimits,NULL/*"Received rampup value outside limits"*/);
 								break;
 					case 'V': if ((value >= SETTINGS_VOLUME_MIN) && (value <= SETTINGS_VOLUME_MAX)) Settings->volume_t=value;
