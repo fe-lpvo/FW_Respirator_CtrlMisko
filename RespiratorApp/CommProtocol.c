@@ -15,7 +15,7 @@ int PrepareStatusMessage(uint32_t timestamp, uint16_t Flow, uint16_t Pressure, u
 	*p_msg = MSG_CORE_LENGTH;
 	p_msg++;
 				
-	*(uint32_t *)p_msg = GetSysTick();
+	*(uint32_t *)p_msg = timestamp;
 	p_msg +=4;
 				
 	*(uint16_t *)p_msg = Flow;

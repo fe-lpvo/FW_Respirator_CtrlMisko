@@ -10,8 +10,8 @@
 #define ACTUATORCONTROL_H_
 
 #include <inttypes.h>
-#include "CommonDefinitions.h"
-#include "ErrorHandling.h"
+#include "RespiratorApp/CommonDefinitions.h"
+#include "RespiratorApp/ErrorHandling.h"
 #include "motor.h"
 
 

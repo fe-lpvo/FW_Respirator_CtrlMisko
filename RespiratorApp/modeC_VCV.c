@@ -8,18 +8,7 @@
 
 #include "modeC_VCV.h"
 
-//Verjetno bo treba postopno zagnat vsak mode in ga tudi ugasnit
-//mogoèe bolj smiselno, da so to deli state machine?
-/*
-void modeVCVstart()
-{
-
-}
-
-void modeVCVstop()
-{
-
-}*/
+//TODO: Add ability to softly transition to other modes.
 
 void modeC_VCV(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams_t* Control)
 {
@@ -95,7 +84,7 @@ void modeC_VCV(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams_
 
 		default:
 		ReportError(ModeC_VCV_UnknownState,NULL/*"Error: Unknown state in C_VCV state machine"*/);
-		motor_SetDutyCycle(0);	
+		Control->mode=CTRL_PAR_MODE_STOP;
 		dihanje_state = 0;
 		break;
 	}

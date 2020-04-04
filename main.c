@@ -6,7 +6,7 @@
  */ 
 
 #include <avr/io.h>
-#include "CommonDefinitions.h"
+#include "RespiratorApp/CommonDefinitions.h"
 #include "LCD_Ili9341.h"
 #include "config.h"
 #include "systime.h"
@@ -16,11 +16,11 @@
 #include "PID.h"
 #include "ADC.h"
 #include "CIRC_BUFF.h"
-#include "CommProtocol.h"
+#include "RespiratorApp/CommProtocol.h"
 #include "motor.h"
 #include "ActuatorControl.h"
-#include "modeC_VCV.h"
-
+#include "RespiratorApp/modeC_VCV.h"
+#include "UART0_IRQ.h"
 
 int main(void)
 {

@@ -10,7 +10,7 @@
 #define COMMON_DEFINITIONS_H_
 
 #include <inttypes.h>
-//#include "config.h"
+#include <stddef.h>
 
 //app defines
 #define MSG_CORE_LENGTH	10

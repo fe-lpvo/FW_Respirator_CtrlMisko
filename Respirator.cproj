@@ -154,22 +154,7 @@
     <Compile Include="CIRC_BUFF.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="CommonDefinitions.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="CommProtocol.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="CommProtocol.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="config.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="ErrorHandling.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="ErrorHandling.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="GPIO.c">
@@ -187,12 +172,6 @@
     <Compile Include="main.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="modeC_VCV.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="modeC_VCV.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="motor.c">
       <SubType>compile</SubType>
     </Compile>
@@ -203,6 +182,27 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="PID.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="RespiratorApp\CommonDefinitions.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="RespiratorApp\CommProtocol.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="RespiratorApp\CommProtocol.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="RespiratorApp\ErrorHandling.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="RespiratorApp\ErrorHandling.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="RespiratorApp\modeC_VCV.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="RespiratorApp\modeC_VCV.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="systime.c">
@@ -226,6 +226,9 @@
     <Compile Include="ugui_config.h">
       <SubType>compile</SubType>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="RespiratorApp" />
   </ItemGroup>
   <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\Compiler.targets" />
 </Project>
