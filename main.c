@@ -20,6 +20,7 @@
 #include "motor.h"
 #include "ActuatorControl.h"
 #include "RespiratorApp/modeC_VCV.h"
+#include "RespiratorApp/modeC_PCV.h"
 #include "UART0_IRQ.h"
 #include "Measure.h"
 
@@ -33,7 +34,8 @@ int main(void)
 	RespSettings_t	Settings;
 	MeasuredParams_t Measured;
 	CtrlParams_t Control;
-	pidData_t PIDdata;
+	pidData_t PIDdata;	//Same PID params if regulating P or V ? Probably not.
+						//Maybe make PID params local to ActuatorControl?
 	
 	//V konèni verziji se to prebere iz eeproma, 
 	//da takoj nadaljujemo od koder smo konèali,
@@ -75,7 +77,7 @@ int main(void)
 			{
 //				case MODE_STOP:   break;
 				case MODE_C_VCV:  modeC_VCV(&Settings, &Measured, &Control); break;
-//				case MODE_C_PCV:  break;
+				case MODE_C_PCV:  modeC_PCV(&Settings, &Measured, &Control); break;
 //				case MODE_AC_VCV:  break;
 //				case MODE_AC_PCV:  break;
 //				case MODE_CPAP:	  break;

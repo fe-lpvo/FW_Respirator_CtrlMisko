@@ -31,38 +31,44 @@ void modeC_PCV(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams_
 		}
 		break;
 					
-		case 2: //zacni ramp-up
-		Control->mode=CTRL_PAR_MODE_TARGET_SPEED;
-		Control->target_speed = 1023;
+		case 2: //start ramp-up
+		Control->mode=CTRL_PAR_MODE_REGULATE_PRESSURE;
+		Control->target_pressure = 0;
 		InspiratoryTiming = 0;
 		dihanje_state++;
 		break;
 					
 		case 3: //ramp-up
 		InspiratoryTiming+= TIME_SLICE_MS;
-		//TODO: Tu kaj reguliramo? V konèni fazi bo verjetno treba
-		//...
+		Control->target_pressure = Settings->PeakInspPressure/Settings->P_ramp*InspiratoryTiming;
 		if (InspiratoryTiming >= Settings->P_ramp)	// gremo v constant pressure
 		{
-			//InspiratoryTiming = 0; //Smatram da nastavitev za inspiratory timing vkljuèuje P_ramp time
+			Control->target_pressure = Settings->PeakInspPressure;
 			dihanje_state++;
 		}
 		break;
 					
 		case 4: //constant pressure
 		InspiratoryTiming+=TIME_SLICE_MS;
-		//TODO: regulate pressure, adjust target pressure from cycle to cycle to achieve desired volume
-		
 		//Detect end condition of inspiratory cycle
-		if ( (Measured->volume_t >= Settings->volume_t) || 
-			 (InspiratoryTiming > Settings->inspiratory_t))
+		if (InspiratoryTiming > Settings->inspiratory_t)
 		{
 			ExpiratoryTiming = 0;
 			dihanje_state++;
 			Control->mode=CTRL_PAR_MODE_TARGET_SPEED;
 			Control->target_speed = -300;
 		}
-		if (Control->mode == CTRL_PAR_MODE_STOP)	//Error ! Motor reached max position befor inspiration completed
+		//Settings->volume_t should contain MAX permisible volume
+		else if (Measured->volume_t >= Settings->volume_t)
+		{
+			ReportError(Limits_VolumeTooHigh,NULL/*"Error! Max Volume reached before end of cycle"*/);
+			ExpiratoryTiming = 0;
+			dihanje_state++;
+			Control->mode=CTRL_PAR_MODE_TARGET_SPEED;
+			Control->target_speed = -300;
+		}
+		//Detect max motor position - Insufficient volume/time Error
+		if (Control->mode == CTRL_PAR_MODE_STOP)	
 		{
 			ReportError(Limits_InsufficientVolume,NULL/*"Error! Target Volume could not be reached"*/);
 			ExpiratoryTiming = 0;
@@ -72,6 +78,8 @@ void modeC_PCV(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams_
 		}
 
 		break;
+
+//TODO: Should there be a pause before expiration???
 					
 		case 5: //izdih
 		ExpiratoryTiming+=TIME_SLICE_MS;

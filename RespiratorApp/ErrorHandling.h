@@ -42,7 +42,8 @@ typedef enum ErrCodes
 	ModeAC_VCV_UnknownState = 0x43,
 	ModeAC_PCV_UnknownState = 0x44,
 	ModeCPAP_UnknownState = 0x45,
-	Limits_InsufficientVolume = 0x50
+	Limits_InsufficientVolume = 0x50,
+	Limits_VolumeTooHigh=0x51
 } ErrCodes_t;
 
 #define ERROR_QUEUE_LENGTH	50

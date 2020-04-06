@@ -14,6 +14,7 @@
 #include "RespiratorApp/ErrorHandling.h"
 #include "motor.h"
 #include "PID.h"
+#include "Measure.h"
 
 void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, pidData_t *PIDdata);
 

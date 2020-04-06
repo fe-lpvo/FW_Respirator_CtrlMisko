@@ -9,6 +9,7 @@
 void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, pidData_t *PIDdata)
 {
 	int16_t motorSpeed;
+
 	//TODO: Test for errors due to variable length!!!
 	Control->cur_position = (((int32_t)motor_GetPosition() - MOTOR_POS_MIN) * 1024)/(MOTOR_POS_MAX - MOTOR_POS_MIN);
 	//TODO: determine appropriate multiplier for speed. Current time difference is 5 ms 
@@ -43,12 +44,12 @@ void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, pidData_
 				else
 				{
 					motor_SetDutyCycle(0);	//Stop if too far
+					MeasureVolume(Measured,1);
 				}
 			}
 			break;
 		}
 		case CTRL_PAR_MODE_TARGET_POSITION:{
-			//Recalculate target control position to absolute motor position units
 			if (Control->target_position - Control->cur_position > 20)
 			{
 				motor_SetDirVdih();
@@ -73,11 +74,11 @@ void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, pidData_
 			{
 				Control->mode=CTRL_PAR_MODE_STOP;
 				motor_SetDutyCycle(0);
+				MeasureVolume(Measured,1);
 			}
 			break;
 		}
 		case CTRL_PAR_MODE_REGULATE_PRESSURE:{
-			//Recalculate target control position to absolute motor position units
 			motorSpeed = PID_Calculate(Control->target_pressure, Measured->pressure, PIDdata);
 			
 			if (motorSpeed == 0)
@@ -89,18 +90,65 @@ void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, pidData_
 				if (Control->cur_position >= CTRL_PAR_MAX_POSITION)
 				{
 					motor_SetDutyCycle(0);
+					Control->mode=CTRL_PAR_MODE_STOP;
 				}
-				motor_SetDirVdih();
-				motor_SetDutyCycle(motorSpeed);
+				else
+				{
+					motor_SetDirVdih();
+					//Is there a need to transform linear motorSpeed to something unlinear for the motor?
+					motor_SetDutyCycle(motorSpeed);
+				}
 			}
 			else if (motorSpeed < 0)
 			{
 				if (Control->cur_position <= 0)
 				{
 					motor_SetDutyCycle(0);
+					Control->mode=CTRL_PAR_MODE_STOP;
+					MeasureVolume(Measured,1);
 				}
-				motor_SetDirIzdih();
-				motor_SetDutyCycle(motorSpeed);
+				else
+				{
+					motor_SetDirIzdih();
+					motor_SetDutyCycle(motorSpeed);
+				}
+			}
+			break;
+		}
+		case CTRL_PAR_MODE_REGULATE_VOLUME:{
+			motorSpeed = PID_Calculate(Control->target_volume, Measured->volume_t, PIDdata);
+			
+			if (motorSpeed == 0)
+			{
+				motor_SetDutyCycle(0);
+			}
+			else if (motorSpeed > 0)
+			{
+				if (Control->cur_position >= CTRL_PAR_MAX_POSITION)
+				{
+					Control->mode=CTRL_PAR_MODE_STOP;
+					motor_SetDutyCycle(0);
+				}
+				else
+				{
+					motor_SetDirVdih();
+					//Is there a need to transform linear motorSpeed to something unlinear for the motor?
+					motor_SetDutyCycle(motorSpeed);
+				}
+			}
+			else if (motorSpeed < 0)
+			{
+				if (Control->cur_position <= 0)
+				{
+					Control->mode=CTRL_PAR_MODE_STOP;
+					motor_SetDutyCycle(0);
+					MeasureVolume(Measured,1);
+				}
+				else
+				{
+					motor_SetDirIzdih();
+					motor_SetDutyCycle(motorSpeed);
+				}
 			}
 			break;
 		}
