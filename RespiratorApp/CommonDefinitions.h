@@ -81,6 +81,8 @@ typedef struct CONTROL_PARAMS{
 	int16_t cur_position;
 	int16_t last_position;
 	int16_t max_speed;	//0-1023 speed limit for target position mode - not yet used / does it make sense?
+	int16_t target_pressure;
+	int16_t target_volume;
 } CtrlParams_t;
 
 

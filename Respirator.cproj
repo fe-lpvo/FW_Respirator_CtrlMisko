@@ -172,6 +172,12 @@
     <Compile Include="main.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="Measure.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Measure.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="motor.c">
       <SubType>compile</SubType>
     </Compile>
@@ -197,6 +203,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="RespiratorApp\ErrorHandling.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="RespiratorApp\modeC_PCV.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="RespiratorApp\modeC_PCV.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="RespiratorApp\modeC_VCV.c">

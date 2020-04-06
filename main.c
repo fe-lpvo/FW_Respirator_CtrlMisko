@@ -33,6 +33,7 @@ int main(void)
 	RespSettings_t	Settings;
 	MeasuredParams_t Measured;
 	CtrlParams_t Control;
+	pidData_t PIDdata;
 	
 	//V konèni verziji se to prebere iz eeproma, 
 	//da takoj nadaljujemo od koder smo konèali,
@@ -55,6 +56,7 @@ int main(void)
 	UART0_Init();
 	Systime_Init();
 	motor_Init();
+	PID_Init(100,10,10,&PIDdata);
 	ADC_Results=ADC_results_p();
 	sei();
 	
@@ -81,7 +83,7 @@ int main(void)
 					operationMode = MODE_DEFAULT;
 					break;
 			}
-			ActuatorControl(&Control);
+			ActuatorControl(&Control,&Measured,&PIDdata);
 			//koda traja xy us (140 us before hardware abstraction was implemented)
 			
 			//ADC_Results = ADC_results_p();	//Zakaj se ta pointer vsakic na novo prebere?

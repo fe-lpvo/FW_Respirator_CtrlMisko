@@ -13,8 +13,8 @@
 #include "RespiratorApp/CommonDefinitions.h"
 #include "RespiratorApp/ErrorHandling.h"
 #include "motor.h"
+#include "PID.h"
 
-
-void ActuatorControl(CtrlParams_t* Control);
+void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, pidData_t *PIDdata);
 
 #endif /* ACTUATORCONTROL_H_ */

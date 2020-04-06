@@ -35,9 +35,15 @@ void MeasureVolume(MeasuredParams_t* Measured, int8_t reset)
 {
 	static int16_t volume;
 	int volume_check=motor_GetPosition();
+	int relative_vol_dif __attribute__((unused));
+	;
 	
-	//TODO: according to 
-	volume +=MeasureFlow()*VOLUME_ADJ_FACTOR;
+	//TODO: compare volume to motor position and Report error if something seams fishy
+	volume += Measured->flow * VOLUME_ADJ_FACTOR;
+	
+	relative_vol_dif = (volume*100L)/volume_check;
+	//if (relative_vol_dif > 120)	ReportError();
+	//if (relative_vol_dif < 80) ReportError();
 	
 	if (reset) volume=0;
 	Measured->volume_t=volume;

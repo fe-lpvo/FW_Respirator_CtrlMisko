@@ -6,8 +6,9 @@
  */ 
 #include "ActuatorControl.h"
 
-void ActuatorControl(CtrlParams_t* Control)
+void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, pidData_t *PIDdata)
 {
+	int16_t motorSpeed;
 	//TODO: Test for errors due to variable length!!!
 	Control->cur_position = (((int32_t)motor_GetPosition() - MOTOR_POS_MIN) * 1024)/(MOTOR_POS_MAX - MOTOR_POS_MIN);
 	//TODO: determine appropriate multiplier for speed. Current time difference is 5 ms 
@@ -77,6 +78,7 @@ void ActuatorControl(CtrlParams_t* Control)
 		}
 		case CTRL_PAR_MODE_REGULATE_PRESSURE:{
 			//Recalculate target control position to absolute motor position units
+			motorSpeed = PID_Calculate(Control->target_pressure, Measured->pressure, PIDdata);
 			if (Control->target_position - Control->cur_position > 20)
 			{
 				motor_SetDirVdih();
