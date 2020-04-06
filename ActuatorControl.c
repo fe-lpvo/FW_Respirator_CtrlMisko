@@ -79,30 +79,28 @@ void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, pidData_
 		case CTRL_PAR_MODE_REGULATE_PRESSURE:{
 			//Recalculate target control position to absolute motor position units
 			motorSpeed = PID_Calculate(Control->target_pressure, Measured->pressure, PIDdata);
-			if (Control->target_position - Control->cur_position > 20)
+			
+			if (motorSpeed == 0)
 			{
-				motor_SetDirVdih();
-				motor_SetDutyCycle(1023);
-			}
-			else if (Control->target_position - Control->cur_position > 2)	//A bit of dead zone ?
-			{
-				motor_SetDirVdih();
-				motor_SetDutyCycle(200);
-			}
-			else if (Control->target_position - Control->cur_position < -20)
-			{
-				motor_SetDirIzdih();
-				motor_SetDutyCycle(1023);
-			}
-			else if (Control->target_position - Control->cur_position < -2)
-			{
-				motor_SetDirIzdih();
-				motor_SetDutyCycle(200);
-			}
-			else
-			{
-				Control->mode=CTRL_PAR_MODE_STOP;
 				motor_SetDutyCycle(0);
+			}
+			else if (motorSpeed > 0)
+			{
+				if (Control->cur_position >= CTRL_PAR_MAX_POSITION)
+				{
+					motor_SetDutyCycle(0);
+				}
+				motor_SetDirVdih();
+				motor_SetDutyCycle(motorSpeed);
+			}
+			else if (motorSpeed < 0)
+			{
+				if (Control->cur_position <= 0)
+				{
+					motor_SetDutyCycle(0);
+				}
+				motor_SetDirIzdih();
+				motor_SetDutyCycle(motorSpeed);
 			}
 			break;
 		}
