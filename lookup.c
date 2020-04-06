@@ -40,7 +40,6 @@ uint16_t Lookup( uint16_t x_value, lookup_table_t *tabela)
 	
 	//find the closest smaller element in table_size
 	element_index = x_norm / tabela->indeks_korak;
-	printf("el: %u ", element_index);
 	if(element_index == tabela->table_size - 1) // this means we are accesing last elemet in table. Just return it's value, otherwise [element_index + 1] will fail
 	{
 		if(tabela->location == LOCATION_RAM)
@@ -56,7 +55,7 @@ uint16_t Lookup( uint16_t x_value, lookup_table_t *tabela)
 	
 	//calcualte where between two table values lies our x_value
 	delta = x_norm - (element_index * tabela->indeks_korak);
-	//printf("de: %u ", delta);
+	
 	//calulate steepnes of curve between our table points
 	if(tabela->location == LOCATION_RAM)
 	{
@@ -65,7 +64,6 @@ uint16_t Lookup( uint16_t x_value, lookup_table_t *tabela)
 	else
 	{
 		k = ((int16_t)pgm_read_word(&(tabela->p_table[element_index + 1])) - (int16_t)pgm_read_word(&(tabela->p_table[element_index]))) / tabela->indeks_korak;
-		printf("k: %u ", k);
 	}
 	
 	
