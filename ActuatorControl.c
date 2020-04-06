@@ -75,6 +75,35 @@ void ActuatorControl(CtrlParams_t* Control)
 			}
 			break;
 		}
+		case CTRL_PAR_MODE_REGULATE_PRESSURE:{
+			//Recalculate target control position to absolute motor position units
+			if (Control->target_position - Control->cur_position > 20)
+			{
+				motor_SetDirVdih();
+				motor_SetDutyCycle(1023);
+			}
+			else if (Control->target_position - Control->cur_position > 2)	//A bit of dead zone ?
+			{
+				motor_SetDirVdih();
+				motor_SetDutyCycle(200);
+			}
+			else if (Control->target_position - Control->cur_position < -20)
+			{
+				motor_SetDirIzdih();
+				motor_SetDutyCycle(1023);
+			}
+			else if (Control->target_position - Control->cur_position < -2)
+			{
+				motor_SetDirIzdih();
+				motor_SetDutyCycle(200);
+			}
+			else
+			{
+				Control->mode=CTRL_PAR_MODE_STOP;
+				motor_SetDutyCycle(0);
+			}
+			break;
+		}
 		default: //Error: Stop immediately
 		ReportError(ActuatorCtrlUnknownMode,NULL/*"Unknown actuator control mode"*/);
 		Control->mode=CTRL_PAR_MODE_TARGET_POSITION;

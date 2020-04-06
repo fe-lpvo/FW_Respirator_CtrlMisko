@@ -52,6 +52,9 @@ typedef struct RESPIRATOR_SETTINGS{
 	uint16_t PeakInspPressure;
 } RespSettings_t;
 
+//measurement factors
+#define VOLUME_ADJ_FACTOR	TIME_SLICE_MS/1024
+
 //Measured Parameters
 typedef struct MEASURED_PARAMS{
 	int16_t flow;
@@ -64,6 +67,8 @@ typedef struct MEASURED_PARAMS{
 #define CTRL_PAR_MODE_STOP				0
 #define CTRL_PAR_MODE_TARGET_SPEED		1
 #define CTRL_PAR_MODE_TARGET_POSITION	2
+#define CTRL_PAR_MODE_REGULATE_PRESSURE	3
+#define CTRL_PAR_MODE_REGULATE_VOLUME	4
 
 #define CTRL_PAR_MAX_POSITION	1023
 #define CTRL_PAR_MIN_POSITION	0
