@@ -21,13 +21,13 @@
 #include "ActuatorControl.h"
 #include "RespiratorApp/modeC_VCV.h"
 #include "UART0_IRQ.h"
+#include "Measure.h"
 
 int main(void)
 {
 	char msg[50];
 	int length;
-	uint16_t *ADC_Results;
-	uint32_t mark1=0;
+	uint32_t mark1=0, mark2=0;
 	uint8_t	operationMode=MODE_DEFAULT;
 	
 	RespSettings_t	Settings;
@@ -57,17 +57,18 @@ int main(void)
 	Systime_Init();
 	motor_Init();
 	PID_Init(100,10,10,&PIDdata);
-	ADC_Results=ADC_results_p();
 	sei();
 	
 	while (1)
 	{
-		if (Has_X_MillisecondsPassed(5,&mark1))
+		// na 2 ms
+		if (ADC_scan_complete())
 		{
+			LED1_On();
 			// branje ADC:
-			Measured.flow = *(ADC_Results+ADC_CH_FLOW);
-			Measured.pressure = *(ADC_Results+ADC_CH_PRESSURE);
-			Measured.volume_t = motor_GetPosition();
+			MeasureFlow(&Measured);
+			MeasurePressure(&Measured);
+			MeasureVolume(&Measured,0);
 						
 			//TODO: mode state machines must return HW independent control values
 			switch (operationMode)
@@ -84,16 +85,21 @@ int main(void)
 					break;
 			}
 			ActuatorControl(&Control,&Measured,&PIDdata);
-			//koda traja xy us (140 us before hardware abstraction was implemented)
-			
-			//ADC_Results = ADC_results_p();	//Zakaj se ta pointer vsakic na novo prebere?
-			
-			//Report Status to the GUI
-			LED1_On();
-			length=PrepareStatusMessage(GetSysTick(), Measured.flow,\
-							Measured.pressure, Measured.volume_t, msg);
-			UART0_SendBytes(msg,length);
 			LED1_Off();
+			//koda traja xy us (140 us before hardware abstraction was implemented)
+		}
+		// na 2 ms
+		if (Has_X_MillisecondsPassed(2,&mark1))
+		{
+			ADC_Start_First_Conversion();
+		}
+		
+		//Report Status to the GUI
+		// na 5 ms
+		if (Has_X_MillisecondsPassed(10,&mark2))
+		{
+			length=PrepareStatusMessage(GetSysTick(), Measured.flow, Measured.pressure, Measured.volume_t, msg);
+			UART0_SendBytes(msg,length);
 		}
 	}
 }

@@ -169,6 +169,12 @@
     <Compile Include="LCD_Ili9341.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="lookup.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="lookup.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="main.c">
       <SubType>compile</SubType>
     </Compile>

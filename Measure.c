@@ -36,7 +36,6 @@ void MeasureVolume(MeasuredParams_t* Measured, int8_t reset)
 	static int16_t volume;
 	int volume_check=motor_GetPosition();
 	int relative_vol_dif __attribute__((unused));
-	;
 	
 	//TODO: compare volume to motor position and Report error if something seams fishy
 	volume += Measured->flow * VOLUME_ADJ_FACTOR;
