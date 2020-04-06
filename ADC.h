@@ -18,11 +18,13 @@
 #define ADC_STARTCHAN	0
 #define ADC_STOPCHAN	3
 #define ADC_FILTER_N	16
+//#define ADC_DOUBLE_BUFFERING
 
-#define ADC_CH_FLOW		ADC_STARTCHAN
-#define ADC_CH_PRESSURE	(ADC_STARTCHAN+1)
-#define ADC_CH_TBD		(ADC_STARTCHAN+2)
-#define ADC_CH_MOTOR	(ADC_STARTCHAN+3)
+#define ADC_CH_FLOW			ADC_STARTCHAN
+#define ADC_CH_PRESSURE		(ADC_STARTCHAN+1)
+#define ADC_CH_MOTOR_CURRENT		(ADC_STARTCHAN+2)
+#define ADC_CH_POSITION		(ADC_STARTCHAN+3)
+#define ADC_CH_FLOWINT		(ADC_STARTCHAN+4)
 // ******************************
 // Konec Uporabniskih nastavitev
 // ******************************

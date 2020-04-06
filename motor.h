@@ -46,7 +46,7 @@
 #define motor_SWB_PIN 3
 
 // meritev pozicije motorja - kanal ADC
-#define MOTOR_POS_CH	ADC_CH_MOTOR
+#define MOTOR_POS_CH	ADC_CH_POSITION
 #define MOTOR_POS_MIN	20
 #define MOTOR_POS_MAX	500
 

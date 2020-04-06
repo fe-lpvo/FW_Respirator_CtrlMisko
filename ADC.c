@@ -13,8 +13,10 @@ uint8_t ADC_channel = 0;
 uint8_t ADC_complete = 0;
 static volatile uint16_t Filter_Array_0[ADC_FILTER_N];
 static volatile uint16_t Filter_Array_1[ADC_FILTER_N];
-uint16_t ADC_results_int[4]={0,0,0,0};	// interni rezultati - double buffering
-uint16_t ADC_results[4];	//rezultati, ki se vrnejo v main - inicializacija na 0 zagotovljena
+uint16_t ADC_results_int[5]={0,0,0,0,0};	// interni rezultati - double buffering
+#ifdef ADC_DOUBLE_BUFFERING
+	uint16_t ADC_results[5];	//rezultati, ki se vrnejo v main - inicializacija na 0 zagotovljena
+#endif
 static volatile uint8_t filter_count, filter_count_old;
 
 void ADC_Init()
@@ -34,7 +36,11 @@ void ADC_Init()
 
 uint16_t *ADC_results_p(void)
 {
-	return ADC_results;
+	#ifdef ADC_DOUBLE_BUFFERING
+		return ADC_results;
+	#else
+		return ADC_results_int;
+	#endif
 }
 
 void ADC_Select_Channel(char channel)
@@ -71,6 +77,7 @@ ISR(ADC_vect)
 		case 0: // moving average filter za kanal 0
 			Filter_Array_0[filter_count] = ADC;
 			ADC_results_int [ADC_channel] += ADC;
+			ADC_results_int [4] += ADC;	// integral
 			ADC_results_int [ADC_channel] -= Filter_Array_0[filter_count_old];
 		break;
 		
@@ -103,11 +110,12 @@ ISR(ADC_vect)
 	
 	if (ADC_channel > ADC_STOPCHAN) 
 	{	
-		ADC_channel = 255;
-		for (uint8_t i=0;i<=ADC_STOPCHAN;i++)
-		{
-			ADC_results[i] = ADC_results_int[i];
-		}
+		#ifdef ADC_DOUBLE_BUFFERING
+			for (uint8_t i=0;i<=ADC_STOPCHAN;i++)
+			{
+				ADC_results[i] = ADC_results_int[i];
+			}
+		#endif
 		ADC_complete = 1;
 	}
 	else 
