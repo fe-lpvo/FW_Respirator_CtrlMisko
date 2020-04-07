@@ -91,7 +91,7 @@ void modeC_PCV(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams_
 		break;
 
 		default:
-		ReportError(ModeC_VCV_UnknownState,NULL/*"Error: Unknown state in C_VCV state machine"*/);
+		ReportError(ModeC_PCV_UnknownState,NULL/*"Error: Unknown state in C_PCV state machine"*/);
 		Control->mode=CTRL_PAR_MODE_STOP;
 		dihanje_state = 0;
 		break;

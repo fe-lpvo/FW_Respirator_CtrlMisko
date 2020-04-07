@@ -13,16 +13,18 @@
 #include <stddef.h>
 
 //app defines
-#define MSG_CORE_LENGTH	10
-#define TIME_SLICE_MS	5	//Timeslice in ms
+#define MSG_CORE_LENGTH	12
+#define TIME_SLICE_MS	2	//Timeslice in ms
+#define STATUS_REPORTING_PERIOD	10	// ms
 
-#define MODE_DEFAULT	1	//Kateri je default?
+#define MODE_DEFAULT	6	//Kateri je default?
 #define MODE_STOP	0
 #define MODE_C_VCV	1		
 #define MODE_C_PCV	2
 #define MODE_AC_VCV	3
 #define MODE_AC_PCV	4
 #define MODE_CPAP	5
+#define MODE_HW_TEST	6
 
 //default settings
 #define SETTINGS_DEFAULT_MODE				MODE_DEFAULT

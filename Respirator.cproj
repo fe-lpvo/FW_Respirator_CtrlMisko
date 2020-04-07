@@ -46,7 +46,7 @@
     <com_atmel_avrdbg_tool_avrdragon>
       <ToolOptions>
         <InterfaceProperties>
-          <IspClock>500000</IspClock>
+          <IspClock>125000</IspClock>
         </InterfaceProperties>
         <InterfaceName>ISP</InterfaceName>
       </ToolOptions>
@@ -55,7 +55,7 @@
       <ToolName>AVR Dragon</ToolName>
     </com_atmel_avrdbg_tool_avrdragon>
     <avrtoolinterface>ISP</avrtoolinterface>
-    <avrtoolinterfaceclock>500000</avrtoolinterfaceclock>
+    <avrtoolinterfaceclock>125000</avrtoolinterfaceclock>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>
@@ -221,6 +221,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="RespiratorApp\modeC_VCV.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="RespiratorApp\modeHWtest.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="RespiratorApp\modeHWtest.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="systime.c">
