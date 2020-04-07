@@ -68,7 +68,9 @@ int main(void)
 	UART0_Init();
 	Systime_Init();
 	motor_Init();
+	MeasureInit();
 	PID_Init(128*5,1,0,&PIDdata);
+	
 	sei();
 	
 	while (1)

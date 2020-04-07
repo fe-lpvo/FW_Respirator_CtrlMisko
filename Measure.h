@@ -14,6 +14,7 @@
 #include "RespiratorApp/ErrorHandling.h"
 #include "motor.h"
 
+void MeasureInit();
 void MeasureFlow(MeasuredParams_t* Measured);
 void MeasurePressure(MeasuredParams_t* Measured);
 void MeasureVolume(MeasuredParams_t* Measured);

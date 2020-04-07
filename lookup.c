@@ -29,7 +29,7 @@ uint16_t Lookup( uint16_t x_value, lookup_table_t *tabela)
 	x_norm = (x_value - tabela->x_min);
 	
 	//check if x data lies in table
-	if(x_norm > (tabela->indeks_korak * (tabela->table_size - 1)))
+	if(x_norm > (tabela->step * (tabela->table_size - 1)))
 	{
 		return 0; // this means error
 	}
@@ -39,7 +39,7 @@ uint16_t Lookup( uint16_t x_value, lookup_table_t *tabela)
 	}
 	
 	//find the closest smaller element in table_size
-	element_index = x_norm / tabela->indeks_korak;
+	element_index = x_norm / tabela->step;
 	if(element_index == tabela->table_size - 1) // this means we are accesing last elemet in table. Just return it's value, otherwise [element_index + 1] will fail
 	{
 		if(tabela->location == LOCATION_RAM)
@@ -54,16 +54,16 @@ uint16_t Lookup( uint16_t x_value, lookup_table_t *tabela)
 	}
 	
 	//calcualte where between two table values lies our x_value
-	delta = x_norm - (element_index * tabela->indeks_korak);
+	delta = x_norm - (element_index * tabela->step);
 	
 	//calulate steepnes of curve between our table points
 	if(tabela->location == LOCATION_RAM)
 	{
-		k = ((int16_t)tabela->p_table[element_index + 1] - (int16_t)tabela->p_table[element_index]) / tabela->indeks_korak;
+		k = ((int16_t)tabela->p_table[element_index + 1] - (int16_t)tabela->p_table[element_index]) / tabela->step;
 	}
 	else
 	{
-		k = ((int16_t)pgm_read_word(&(tabela->p_table[element_index + 1])) - (int16_t)pgm_read_word(&(tabela->p_table[element_index]))) / tabela->indeks_korak;
+		k = ((int16_t)pgm_read_word(&(tabela->p_table[element_index + 1])) - (int16_t)pgm_read_word(&(tabela->p_table[element_index]))) / tabela->step;
 	}
 	
 	
@@ -92,10 +92,10 @@ uint16_t Lookup( uint16_t x_value, lookup_table_t *tabela)
 // Parameter: uint8_t size - velikost tabele
 // Parameter: uint16_t* tabel_loc - kazalec na tabelo
 //*
-void Lookup_init (lookup_table_t* table, LookupTableLoc_t location, uint8_t step, uint16_t xMin, uint8_t size, uint16_t* tabel_loc)
+void Lookup_init (lookup_table_t* table, LookupTableLoc_t location, uint16_t step, uint16_t xMin, uint8_t size, uint16_t* tabel_loc)
 {
 	table->location = location;
-	table->indeks_korak = step;
+	table->step = step;
 	table->x_min = xMin;
 	table->table_size = size;
 	table->p_table = tabel_loc;
