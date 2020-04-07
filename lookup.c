@@ -18,7 +18,7 @@
 // Parameter: uint16_t x_value je spremenljivka, ki dolo?a lokacijo v tabeli
 // Parameter: LookupTableStruct_t *tabela je pointer na strukturo, ki dolo?a vse lastnosti tabele
 //*
-uint16_t Lookup( uint16_t x_value, lookup_table_t *tabela)
+int16_t Lookup( uint16_t x_value, lookup_table_t *tabela)
 {
 	uint16_t element_index;
 	uint16_t delta;
@@ -40,7 +40,7 @@ uint16_t Lookup( uint16_t x_value, lookup_table_t *tabela)
 	
 	//find the closest smaller element in table_size
 	element_index = x_norm / tabela->step;
-	if(element_index == tabela->table_size - 1) // this means we are accesing last elemet in table. Just return it's value, otherwise [element_index + 1] will fail
+	if(element_index == tabela->table_size - 1) // this means we are accessing last element in table. Just return it's value, otherwise [element_index + 1] will fail
 	{
 		if(tabela->location == LOCATION_RAM)
 		{
@@ -53,10 +53,10 @@ uint16_t Lookup( uint16_t x_value, lookup_table_t *tabela)
 		
 	}
 	
-	//calcualte where between two table values lies our x_value
+	//calculate where between two table values lies our x_value
 	delta = x_norm - (element_index * tabela->step);
 	
-	//calulate steepnes of curve between our table points
+	//calculate steepens of curve between our table points
 	if(tabela->location == LOCATION_RAM)
 	{
 		k = ((int16_t)tabela->p_table[element_index + 1] - (int16_t)tabela->p_table[element_index]) / tabela->step;
@@ -88,11 +88,11 @@ uint16_t Lookup( uint16_t x_value, lookup_table_t *tabela)
 // Qualifier: Pripravi strukturo za lookup z ustreznimi parametri
 // Parameter: lookup_table_t* table - kazalec na strukturo ki jo elimo konfigurirati
 // Parameter: LookupTableLoc_t location - parameter pove ali je tabela v RAM-u (LOCATION_RAM) ali flashu (LOCATION_FLAH)
-// Parameter: uint8_t step -  korak vrednosti med sosednjima x vrednostma
+// Parameter: uint16_t step -  korak vrednosti med sosednjima x vrednostma
 // Parameter: uint8_t size - velikost tabele
-// Parameter: uint16_t* tabel_loc - kazalec na tabelo
+// Parameter: int16_t* tabel_loc - kazalec na tabelo
 //*
-void Lookup_init (lookup_table_t* table, LookupTableLoc_t location, uint16_t step, uint16_t xMin, uint8_t size, uint16_t* tabel_loc)
+void Lookup_init (lookup_table_t* table, LookupTableLoc_t location, uint8_t step, uint16_t xMin, uint8_t size, int16_t* tabel_loc)
 {
 	table->location = location;
 	table->step = step;

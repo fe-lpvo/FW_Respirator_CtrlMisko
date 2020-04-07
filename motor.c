@@ -7,6 +7,7 @@
 #include "motor.h"
 #include <avr/interrupt.h>
 
+MotorDir_t MotorDir;
 
 void motor_Init()
 {
@@ -27,7 +28,7 @@ void motor_Init()
 	motor_SWB_PORT |= (1<< motor_SWB_PIN);	//pullup
 		
 	// ext interrupt za koncna stikala
-	EICRA = (1<<ISC01) | (1<<ISC11);//Falling EDGE
+	EICRA = (1<<ISC01) | (1<<ISC11);//rising EDGE - stikala normaly close
 	EIMSK = (1<<INT1) | (1<<INT0); //Enable interrupts
 	EIFR = (1<<INTF1) | (1<<INTF0); //Clear flags
 		
@@ -49,7 +50,9 @@ ISR(INT1_vect)//SWB
 void motor_SetDutyCycle(uint16_t dutyCycle)
 {
 	if (dutyCycle>MAX_DC) dutyCycle = MAX_DC;
-	OCR1A = dutyCycle;
+	if ( (MotorDir==MOTOR_VDIH && !MOTOR_GET_SW_A) || (MotorDir==MOTOR_IZDIH && !MOTOR_GET_SW_B))
+		OCR1A = dutyCycle;
+	else OCR1A = 0;
 }
 
 int16_t motor_GetPosition()
@@ -70,6 +73,7 @@ void motor_SetDirVdih()
 	_delay_us(10);	//dead time
 	motor_INB_PORT |= (1<<motor_INB_PIN);
 	motor_SEL0_PORT &= ~(1<<motor_SEL0_PIN);
+	MotorDir=MOTOR_VDIH;
 }
 
 void motor_SetDirIzdih() 
@@ -78,4 +82,5 @@ void motor_SetDirIzdih()
 	_delay_us(10);	//dead time
 	motor_INA_PORT |= (1<<motor_INA_PIN);
 	motor_SEL0_PORT |= (1<<motor_SEL0_PIN);
+	MotorDir=MOTOR_IZDIH;
 }

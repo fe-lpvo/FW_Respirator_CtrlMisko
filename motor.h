@@ -36,13 +36,15 @@
 #define motor_SEL0_PORT PORTB
 #define motor_SEL0_PIN 0
 
-// Input - koncna stikala - PD2 in PD3
+// Input - koncna stikala - PD2 in PD3 - normaly closed - ?e je 0, je vse OK, ?e je 1, je motor povozil stikalo
 #define motor_SWA_DDR DDRD
 #define motor_SWA_PORT PORTD
+#define motor_SWA_PORTIN PIND
 #define motor_SWA_PIN 2
 
 #define motor_SWB_DDR DDRD
 #define motor_SWB_PORT PORTD
+#define motor_SWB_PORTIN PIND
 #define motor_SWB_PIN 3
 
 // meritev pozicije motorja - kanal ADC
@@ -62,6 +64,15 @@
 
 #define MOTOR_OK 1
 #define MOTOR_ERR 0
+
+#define MOTOR_GET_SW_A	(motor_SWA_PORTIN&(1<<motor_SWA_PIN))
+#define MOTOR_GET_SW_B	(motor_SWB_PORTIN&(1<<motor_SWB_PIN))
+
+typedef enum
+{
+	MOTOR_VDIH,
+	MOTOR_IZDIH
+}MotorDir_t;
 
 void motor_Init();
 void motor_SetDutyCycle(uint16_t dutyCycle);

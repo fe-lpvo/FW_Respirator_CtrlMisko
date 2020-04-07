@@ -7,17 +7,14 @@
 #include "Measure.h"
 #include "Lookup.h"
 
-const uint16_t flowdata[] PROGMEM = {0, 550, 1153, 1733, 2291, 2827, 3343, 3840, 4318, 4778, 5222, 5649,
-	6062, 6461, 6846, 7220, 7582, 7934, 8277, 8611, 8937, 9257, 9571, 9881,
-	10186, 10489, 10790, 11089, 11388, 11688, 11990, 12294, 12602, 12914, 13231, 13555,
-13886, 14225, 14573, 14931, 15300}; // size = 41, step = 10, xMin = 100
+const int16_t flowdata[] PROGMEM = {-3430,-2890,-2368,-1800,-1250,-800,-480,-150,280,825,1395,1990,2490,3000,3440,3887,4345,4790,5220,5550,5950,6300,6700,7050,7400,7770,8078,8377,8670,9000,9300,9600,9900,10162,10488,10900,11300,11700,12100,12500,13000,13400,13800,14200,14627,15055,15448,15789,16058}; 
+	// size = 49, step = 250, xMin = 0
 
 lookup_table_t Flow_table;
 
 void MeasureInit()
 {
-//	Lookup_init(&Flow_table,LOCATION_FLASH,100,100,41,flowdata);
-	Lookup_init(&Flow_table,LOCATION_FLASH,424,163,41,(uint16_t*)flowdata);
+	Lookup_init(&Flow_table,LOCATION_FLASH,250,0,49,(int16_t*)flowdata);
 }
 
 void MeasureFlow(MeasuredParams_t* Measured)
