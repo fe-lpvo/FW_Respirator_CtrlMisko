@@ -12,7 +12,7 @@
 #include "CommonDefinitions.h"
 #include "ErrorHandling.h"
 
-int PrepareStatusMessage(uint32_t timestamp, uint16_t Flow, uint16_t Pressure, uint16_t Volume, char *p_msg);
+int PrepareStatusMessage(uint32_t timestamp, int16_t Flow, int16_t Pressure, int16_t Volume, int16_t MotorPosition, char *p_msg);
 
 
 #endif /* COMMPROTOCOL_H_ */

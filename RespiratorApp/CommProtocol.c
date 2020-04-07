@@ -6,7 +6,7 @@
  */ 
 #include "CommProtocol.h"
 
-int PrepareStatusMessage(uint32_t timestamp, uint16_t Flow, uint16_t Pressure, uint16_t Volume, char *p_msg)
+int PrepareStatusMessage(uint32_t timestamp, int16_t Flow, int16_t Pressure, int16_t Volume, int16_t MotorPosition, char *p_msg)
 {
 	//STX+N+TIMESTAMP+4xADC+ETX
 	*p_msg = 0x55;
@@ -18,13 +18,16 @@ int PrepareStatusMessage(uint32_t timestamp, uint16_t Flow, uint16_t Pressure, u
 	*(uint32_t *)p_msg = timestamp;
 	p_msg +=4;
 				
-	*(uint16_t *)p_msg = Flow;
+	*(int16_t *)p_msg = Flow;
 	p_msg +=2;
 				
-	*(uint16_t *)p_msg = Pressure;
+	*(int16_t *)p_msg = Pressure;
 	p_msg +=2;
 				
-	*(uint16_t *)p_msg = Volume;
+	*(int16_t *)p_msg = Volume;
+	p_msg +=2;
+
+	*(int16_t *)p_msg = MotorPosition;
 	p_msg +=2;
 				
 	*(p_msg) = 0xAA;

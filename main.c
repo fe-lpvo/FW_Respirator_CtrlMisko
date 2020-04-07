@@ -21,6 +21,7 @@
 #include "ActuatorControl.h"
 #include "RespiratorApp/modeC_VCV.h"
 #include "RespiratorApp/modeC_PCV.h"
+#include "RespiratorApp/modeHWtest.h"
 #include "UART0_IRQ.h"
 #include "Measure.h"
 
@@ -81,6 +82,7 @@ int main(void)
 //				case MODE_AC_VCV:  break;
 //				case MODE_AC_PCV:  break;
 //				case MODE_CPAP:	  break;
+				case MODE_HW_TEST: modeHWtest(&Settings, &Measured, &Control); break;
 				default: 
 					ReportError(ModeUnknownMode,NULL/*"Unknown operation mode"*/);
 					operationMode = MODE_DEFAULT;
@@ -91,16 +93,15 @@ int main(void)
 			//koda traja xy us (140 us before hardware abstraction was implemented)
 		}
 		// na 2 ms
-		if (Has_X_MillisecondsPassed(2,&mark1))
+		if (Has_X_MillisecondsPassed(TIME_SLICE_MS,&mark1))
 		{
 			ADC_Start_First_Conversion();
 		}
 		
 		//Report Status to the GUI
-		// na 5 ms
-		if (Has_X_MillisecondsPassed(10,&mark2))
+		if (Has_X_MillisecondsPassed(STATUS_REPORTING_PERIOD,&mark2))
 		{
-			length=PrepareStatusMessage(GetSysTick(), Measured.flow, Measured.pressure, Measured.volume_t, msg);
+			length=PrepareStatusMessage(GetSysTick(), Measured.flow, Measured.pressure, Measured.volume_t, motor_GetPosition(),msg);
 			UART0_SendBytes(msg,length);
 		}
 	}
