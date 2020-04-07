@@ -52,9 +52,10 @@ void motor_SetDutyCycle(uint16_t dutyCycle)
 	OCR1A = dutyCycle;
 }
 
-uint16_t motor_GetPosition()
+int16_t motor_GetPosition()
 {
-	return *(ADC_results_p()+ADC_CH_POSITION);
+	uint16_t raw=*(ADC_results_p()+ADC_CH_POSITION);
+	return MOTOR_POS_RAW_OPEN-raw;
 }
 
 void motor_SetDirVdih() 

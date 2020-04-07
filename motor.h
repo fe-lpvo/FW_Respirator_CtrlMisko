@@ -47,8 +47,12 @@
 
 // meritev pozicije motorja - kanal ADC
 #define MOTOR_POS_CH	ADC_CH_POSITION
-#define MOTOR_POS_MIN	20
-#define MOTOR_POS_MAX	500
+#define MOTOR_POS_RAW_OPEN	850	// --> 0
+#define MOTOR_POS_RAW_CLOSED 740	// -->?
+#define MOTOR_POS_BREAKINGPOINT_OPEN 885
+#define MOTOR_POS_BREAKINGPOINT_CLOSED 726
+#define MOTOR_POS_OPEN	0		// pos: \ /
+#define MOTOR_POS_CLOSED	(MOTOR_POS_RAW_OPEN - MOTOR_POS_RAW_CLOSED) // pos: ||
 
 // maksimalna vredfnost registra za dutycylce
 #define MAX_DC	1023
@@ -64,6 +68,6 @@ void motor_SetDutyCycle(uint16_t dutyCycle);
 void motor_SetDirVdih();
 void motor_SetDirIzdih();
 char motor_SetDirection(char direction);
-uint16_t motor_GetPosition();
+int16_t motor_GetPosition();
 
 #endif /* MOTOR_H_ */

@@ -11,7 +11,7 @@ void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, pidData_
 	int16_t motorSpeed;
 
 	//TODO: Test for errors due to variable length!!!
-	Control->cur_position = (((int32_t)motor_GetPosition() - MOTOR_POS_MIN) * 1024)/(MOTOR_POS_MAX - MOTOR_POS_MIN);
+	Control->cur_position = ((int32_t)motor_GetPosition() * 1024)/MOTOR_POS_CLOSED;
 	//TODO: determine appropriate multiplier for speed. Current time difference is 5 ms 
 	Control->cur_speed = Control->cur_position - Control->last_position;
 	
