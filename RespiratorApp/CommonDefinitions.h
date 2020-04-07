@@ -13,7 +13,7 @@
 #include <stddef.h>
 
 //app defines
-#define MSG_CORE_LENGTH	14
+#define MSG_CORE_LENGTH	16
 #define TIME_SLICE_MS	2	//Timeslice in ms
 #define STATUS_REPORTING_PERIOD	10	// ms
 

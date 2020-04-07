@@ -16,7 +16,7 @@
 
 void MeasureFlow(MeasuredParams_t* Measured);
 void MeasurePressure(MeasuredParams_t* Measured);
-void MeasureVolume(MeasuredParams_t* Measured, int8_t reset);
+void MeasureVolume(MeasuredParams_t* Measured);
 
 #define PRESSURE_MIN	1632	//=16*102
 #define PRESSURE_MAX	14688	//=16*918

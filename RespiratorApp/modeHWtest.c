@@ -6,10 +6,11 @@
  */ 
 #include "modeHWtest.h"
 #include "../GPIO.h"
+#include "../Measure.h"
 
 void modeHWtest(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams_t* Control)
 {
-#if 1
+#if 0
 	static uint8_t dihanje_state = 0;
 	switch (dihanje_state)
 	{
@@ -66,7 +67,7 @@ void modeHWtest(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams
 		
 		case 2: //reguliraj pritisk 10s
 		Control->mode=CTRL_PAR_MODE_REGULATE_PRESSURE;
-		Control->target_pressure = 300;
+		Control->target_pressure = PRESSURE_MAX/10*3;
 		timing=0;
 		dihanje_state++;
 		break;

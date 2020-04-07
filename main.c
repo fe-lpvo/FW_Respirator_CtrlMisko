@@ -25,7 +25,7 @@
 #include "UART0_IRQ.h"
 #include "Measure.h"
 
-int32_t yy[100];
+//int32_t yy[100];	//global da compiler ne odoptimizira
 
 int main(void)
 {
@@ -39,13 +39,13 @@ int main(void)
 	CtrlParams_t Control;
 	pidData_t PIDdata;	//Same PID params if regulating P or V ? Probably not.
 						//Maybe make PID params local to ActuatorControl?
-	
+	/*
 	int i;
 	
 	for (i=0;i<100;i++)
 	{
 		yy[i]=FIR(1023);
-	}
+	}*/
 	
 	//V konèni verziji se to prebere iz eeproma, 
 	//da takoj nadaljujemo od koder smo konèali,
@@ -68,7 +68,7 @@ int main(void)
 	UART0_Init();
 	Systime_Init();
 	motor_Init();
-	PID_Init(100,10,10,&PIDdata);
+	PID_Init(128*5,1,0,&PIDdata);
 	sei();
 	
 	while (1)
@@ -80,7 +80,7 @@ int main(void)
 			// branje ADC:
 			MeasureFlow(&Measured);
 			MeasurePressure(&Measured);
-			MeasureVolume(&Measured,0);
+			MeasureVolume(&Measured);
 						
 			//TODO: mode state machines must return HW independent control values
 			switch (operationMode)
@@ -112,7 +112,7 @@ int main(void)
 		{
 			length=PrepareStatusMessage(GetSysTick(), Measured.flow, 
 					Measured.pressure, Measured.volume_t, 
-					motor_GetPosition(), motor_GetCurrent(),msg);
+					motor_GetPosition(), motor_GetCurrent(), OCR1A, msg);
 			UART0_SendBytes(msg,length);
 		}
 	}
