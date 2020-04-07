@@ -28,7 +28,7 @@ void modeHWtest(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams
 		
 		case 2: //poslji jih na sredino
 		Control->mode=CTRL_PAR_MODE_TARGET_POSITION;
-		Control->target_position = 512;
+		Control->target_position = 1023;
 		dihanje_state++;
 		break;
 		

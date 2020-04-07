@@ -13,7 +13,7 @@ ISR(TIMER0_COMPA_vect)
 {
 	systick++;
 	TIME_STATUS |= (1<<F1ms);	//SetF1ms()
-	ADC_Start_First_Conversion();
+	//ADC_Start_First_Conversion();
 }
 
 void Systime_Init()

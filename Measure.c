@@ -14,7 +14,7 @@ void MeasureFlow(MeasuredParams_t* Measured)
 	ADC_Results=ADC_results_p();
 
 	//TODO: according to calibration adjust scaling
-	flow = *(ADC_Results+ADC_CH_FLOW);
+	flow = *(ADC_Results+ADC_CH_FLOW) - FLOW_MIN;
 	Measured->flow=flow;
 }
 
@@ -26,7 +26,7 @@ void MeasurePressure(MeasuredParams_t* Measured)
 	ADC_Results=ADC_results_p();
 	
 	//TODO: adjust scaling
-	pressure = *(ADC_Results+ADC_CH_PRESSURE);
+	pressure = *(ADC_Results+ADC_CH_PRESSURE) - PRESSURE_MIN;
 	
 	Measured->pressure=pressure;
 }

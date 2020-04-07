@@ -25,6 +25,8 @@
 #include "UART0_IRQ.h"
 #include "Measure.h"
 
+int32_t yy[100];
+
 int main(void)
 {
 	char msg[50];
@@ -37,6 +39,13 @@ int main(void)
 	CtrlParams_t Control;
 	pidData_t PIDdata;	//Same PID params if regulating P or V ? Probably not.
 						//Maybe make PID params local to ActuatorControl?
+	
+	int i;
+	
+	for (i=0;i<100;i++)
+	{
+		yy[i]=FIR(1023);
+	}
 	
 	//V konèni verziji se to prebere iz eeproma, 
 	//da takoj nadaljujemo od koder smo konèali,
@@ -101,7 +110,9 @@ int main(void)
 		//Report Status to the GUI
 		if (Has_X_MillisecondsPassed(STATUS_REPORTING_PERIOD,&mark2))
 		{
-			length=PrepareStatusMessage(GetSysTick(), Measured.flow, Measured.pressure, Measured.volume_t, motor_GetPosition(),msg);
+			length=PrepareStatusMessage(GetSysTick(), Measured.flow, 
+					Measured.pressure, Measured.volume_t, 
+					motor_GetPosition(), motor_GetCurrent(),msg);
 			UART0_SendBytes(msg,length);
 		}
 	}

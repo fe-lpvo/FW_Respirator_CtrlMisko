@@ -6,10 +6,33 @@
  */ 
 #include "ActuatorControl.h"
 
+int32_t FIR(int16_t new_x)
+{
+	const int32_t b[]={2, 6, 15, 30, 54, 87, 131, 186, 253, 332, 422, 521, 629, 743, 860, 978, 1093, 1202, 1303, 1393, 1468, 1526, 1566, 1586};
+	#define FILTER_LENGTH (sizeof(b)/sizeof(b[0])*2)
+	static int32_t x[FILTER_LENGTH];
+	static int index=0;
+	int i;
+	int32_t y;
+	
+	x[index]=new_x;
+	y=0;
+	for (i=0; i<FILTER_LENGTH/2; i++)
+	{
+		y+=b[i]*x[(index+FILTER_LENGTH-i)%FILTER_LENGTH] + b[i]*x[(index+1+i)%FILTER_LENGTH];
+	}
+	index++;
+	if (index >= FILTER_LENGTH) index = 0;
+	
+	return (y>>15);
+}
+
 void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, pidData_t *PIDdata)
 {
 	int16_t motorSpeed;
-
+	static int16_t lastDC;
+	int16_t newDC;
+	#define MAX_DC_CHANGE	5
 	//TODO: Test for errors due to variable length!!!
 	Control->cur_position = ((int32_t)motor_GetPosition() * 1024)/MOTOR_POS_CLOSED;
 	//TODO: determine appropriate multiplier for speed. Current time difference is 5 ms 
@@ -50,31 +73,37 @@ void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, pidData_
 			break;
 		}
 		case CTRL_PAR_MODE_TARGET_POSITION:{
-			if (Control->target_position - Control->cur_position > 20)
+			if (Control->target_position - Control->cur_position >= 0)
+			{
+				if (Control->target_position - Control->cur_position > 2) newDC=MAX_DC;
+				else
+				{
+					Control->mode=CTRL_PAR_MODE_STOP;
+					motor_SetDutyCycle(0);
+					MeasureVolume(Measured,1);
+				}
+			}
+			else //if (Control->target_position - Control->cur_position < 0)
+			{
+				if (Control->target_position - Control->cur_position < -2) newDC=-MAX_DC/4;
+				else
+				{
+					Control->mode=CTRL_PAR_MODE_STOP;
+					motor_SetDutyCycle(0);
+					MeasureVolume(Measured,1);
+				}
+			}
+			if ((newDC-lastDC) > MAX_DC_CHANGE) {newDC = lastDC + MAX_DC_CHANGE;}
+			else if ((newDC-lastDC) < -MAX_DC_CHANGE) {newDC = lastDC-MAX_DC_CHANGE;}
+			if (newDC > 0)
 			{
 				motor_SetDirVdih();
-				motor_SetDutyCycle(1023);
-			}
-			else if (Control->target_position - Control->cur_position > 2)	//A bit of dead zone ?
-			{
-				motor_SetDirVdih();
-				motor_SetDutyCycle(200);
-			}
-			else if (Control->target_position - Control->cur_position < -20)
-			{
-				motor_SetDirIzdih();
-				motor_SetDutyCycle(1023);
-			}
-			else if (Control->target_position - Control->cur_position < -2)
-			{
-				motor_SetDirIzdih();
-				motor_SetDutyCycle(200);
+				motor_SetDutyCycle(newDC);
 			}
 			else
 			{
-				Control->mode=CTRL_PAR_MODE_STOP;
-				motor_SetDutyCycle(0);
-				MeasureVolume(Measured,1);
+				motor_SetDirIzdih();
+				motor_SetDutyCycle(-newDC);
 			}
 			break;
 		}
@@ -158,5 +187,6 @@ void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, pidData_
 		motor_SetDutyCycle(0);
 		break;
 	}
+	lastDC = newDC;
 	Control->last_position = Control->cur_position;
 }

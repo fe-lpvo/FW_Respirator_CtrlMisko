@@ -47,7 +47,7 @@
 
 // meritev pozicije motorja - kanal ADC
 #define MOTOR_POS_CH	ADC_CH_POSITION
-#define MOTOR_POS_RAW_OPEN	850	// --> 0
+#define MOTOR_POS_RAW_OPEN	830	// --> 0
 #define MOTOR_POS_RAW_CLOSED 740	// -->?
 #define MOTOR_POS_BREAKINGPOINT_OPEN 885
 #define MOTOR_POS_BREAKINGPOINT_CLOSED 726
@@ -69,5 +69,6 @@ void motor_SetDirVdih();
 void motor_SetDirIzdih();
 char motor_SetDirection(char direction);
 int16_t motor_GetPosition();
+int16_t motor_GetCurrent();
 
 #endif /* MOTOR_H_ */

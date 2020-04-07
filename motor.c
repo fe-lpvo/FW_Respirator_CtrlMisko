@@ -55,7 +55,13 @@ void motor_SetDutyCycle(uint16_t dutyCycle)
 int16_t motor_GetPosition()
 {
 	uint16_t raw=*(ADC_results_p()+ADC_CH_POSITION);
-	return MOTOR_POS_RAW_OPEN-raw;
+	return (MOTOR_POS_RAW_OPEN-raw) ;
+}
+
+int16_t motor_GetCurrent()
+{
+	uint16_t raw=*(ADC_results_p()+ADC_CH_MOTOR_CURRENT);
+	return raw;
 }
 
 void motor_SetDirVdih() 
