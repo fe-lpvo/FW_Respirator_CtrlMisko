@@ -27,6 +27,7 @@ void MeasureFlow(MeasuredParams_t* Measured)
 	//TODO: according to calibration adjust scaling
 	//flow = *(ADC_Results+ADC_CH_FLOW) - FLOW_MIN;
 	flow = Lookup(*(ADC_Results+ADC_CH_FLOW),&Flow_table);
+	if (flow<FLOW_ZERO_TRESHOLD && flow>-FLOW_ZERO_TRESHOLD) flow = 0;
 	Measured->flow=flow;
 }
 
@@ -39,6 +40,7 @@ void MeasurePressure(MeasuredParams_t* Measured)
 	
 	//TODO: adjust scaling
 	pressure = *(ADC_Results+ADC_CH_PRESSURE) - PRESSURE_MIN;
+	if (pressure<PRESSURE_ZERO_TRESHOLD && pressure>-PRESSURE_ZERO_TRESHOLD) pressure = 0;
 	
 	Measured->pressure=pressure;
 }
@@ -46,23 +48,36 @@ void MeasurePressure(MeasuredParams_t* Measured)
 void MeasureVolume(MeasuredParams_t* Measured)
 {
 	static int32_t volume;
-	static int reset=0;
-	int volume_check=motor_GetPosition();
+	//int volume_check=motor_GetPosition();
 	int relative_vol_dif __attribute__((unused));
 	
-	//TODO: compare volume to motor position and Report error if something seams fishy
-	volume += (int32_t)Measured->flow * TIME_SLICE_MS;
+	switch (Measured->volume_mode)
+	{
+		case VOLUME_INTEGRATE:
+			volume += (int32_t)Measured->flow * TIME_SLICE_MS;
+		break;
+		
+		case VOLUME_RESET:
+			volume = 0;
+		break;
+		
+		default://do nothing
+		break;
+	}
 	
-	relative_vol_dif = (volume*100L)/volume_check;
+	if (volume<0) volume=0;
+	
+	//TODO: compare volume to motor position and Report error if something seams fishy
+	// integral
+	
+	
+	//relative_vol_dif = (volume*100L)/volume_check;
 	//if (relative_vol_dif > 120)	ReportError();
 	//if (relative_vol_dif < 80) ReportError();
 	
-	if (Measured->flow < - FLOW_MIN/2) reset=1;
-	if (reset)
-	{
-		volume = 0;
-		if (Measured->flow > 0) reset=0;
-	}
-	Measured->volume_t=volume/1024;
+	// flow is in 0.01 l/min, but volume should be in cm3. [0.1 cm3/ms] = 10*1000/(60*1000*100) [0.01 l/min]
+	// result will be in 0.1 cm3
+	
+	Measured->volume_t=volume/600;
 }
 

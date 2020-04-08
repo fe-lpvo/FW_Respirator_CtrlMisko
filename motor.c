@@ -35,11 +35,12 @@ void motor_Init()
 	TCCR1A = (1<<COM1A1) | (1<<WGM11) | (1<<WGM10);
 	TCCR1B = (1<<CS10) | (1<<WGM12);
 	OCR1A = 0;
+	MotorDir = MOTOR_DIR_UNDEFINED;
 }
 
 ISR (INT0_vect)//SWA
 {
-	OCR1A = 0;
+	OCR1A = MOTOR_MIN_DC;
 }
 
 ISR(INT1_vect)//SWB
@@ -49,10 +50,18 @@ ISR(INT1_vect)//SWB
 
 void motor_SetDutyCycle(uint16_t dutyCycle)
 {
-	if (dutyCycle>MAX_DC) dutyCycle = MAX_DC;
-	if ( (MotorDir==MOTOR_VDIH && !MOTOR_GET_SW_A) || (MotorDir==MOTOR_IZDIH && !MOTOR_GET_SW_B))
-		OCR1A = dutyCycle;
-	else OCR1A = 0;
+	if (dutyCycle>MOTOR_MAX_DC) dutyCycle = MOTOR_MAX_DC;
+	if ( MotorDir==MOTOR_DIR_VDIH) // ko stiskamo, ne sme DC nikoli pasti na nic, tudi ce pride do konca
+	{
+		if (!MOTOR_GET_SW_A) OCR1A = dutyCycle;
+		else OCR1A = MOTOR_MIN_DC;		
+	}
+	else	//izdih
+	{
+		if (!MOTOR_GET_SW_B) OCR1A = dutyCycle;
+		else OCR1A=0;
+	}
+	
 }
 
 int16_t motor_GetPosition()
@@ -67,20 +76,37 @@ int16_t motor_GetCurrent()
 	return raw;
 }
 
-void motor_SetDirVdih() 
+int16_t motor_GetPWM()
 {
-	motor_INA_PORT &= ~(1<<motor_INA_PIN);
-	_delay_us(10);	//dead time
-	motor_INB_PORT |= (1<<motor_INB_PIN);
-	motor_SEL0_PORT &= ~(1<<motor_SEL0_PIN);
-	MotorDir=MOTOR_VDIH;
+	if (OCR1A==0) return 0;
+	if (MotorDir == MOTOR_DIR_VDIH) return OCR1A;
+	else return -OCR1A;
 }
 
-void motor_SetDirIzdih() 
+void motor_SetDir(MotorDir_t direction)
 {
-	motor_INB_PORT &= ~(1<<motor_INB_PIN);
-	_delay_us(10);	//dead time
-	motor_INA_PORT |= (1<<motor_INA_PIN);
-	motor_SEL0_PORT |= (1<<motor_SEL0_PIN);
-	MotorDir=MOTOR_IZDIH;
+	if (MotorDir!=direction)
+	{
+		switch (direction)
+		{
+			case MOTOR_DIR_VDIH:
+				motor_INA_PORT &= ~(1<<motor_INA_PIN);
+				_delay_us(10);	//dead time
+				motor_INB_PORT |= (1<<motor_INB_PIN);
+				motor_SEL0_PORT &= ~(1<<motor_SEL0_PIN);
+				MotorDir=MOTOR_DIR_VDIH;
+			break;
+			
+			case MOTOR_DIR_IZDIH:
+				motor_INB_PORT &= ~(1<<motor_INB_PIN);
+				_delay_us(10);	//dead time
+				motor_INA_PORT |= (1<<motor_INA_PIN);
+				motor_SEL0_PORT |= (1<<motor_SEL0_PIN);
+				MotorDir=MOTOR_DIR_IZDIH;
+			break;
+			
+			default: //do nothing
+			break;
+		}
+	}
 }

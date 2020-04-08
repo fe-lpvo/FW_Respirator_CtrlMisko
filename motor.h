@@ -57,7 +57,8 @@
 #define MOTOR_POS_CLOSED	(MOTOR_POS_RAW_OPEN - MOTOR_POS_RAW_CLOSED) // pos: ||
 
 // maksimalna vredfnost registra za dutycylce
-#define MAX_DC	1023
+#define MOTOR_MAX_DC	1023
+#define MOTOR_MIN_DC 200
 // ******************************
 // Konec Uporabniskih nastavitev
 // ******************************
@@ -70,16 +71,15 @@
 
 typedef enum
 {
-	MOTOR_VDIH,
-	MOTOR_IZDIH
+	MOTOR_DIR_VDIH,
+	MOTOR_DIR_IZDIH,
+	MOTOR_DIR_UNDEFINED
 }MotorDir_t;
 
 void motor_Init();
 void motor_SetDutyCycle(uint16_t dutyCycle);
-void motor_SetDirVdih();
-void motor_SetDirIzdih();
-char motor_SetDirection(char direction);
+void motor_SetDir(MotorDir_t direction);
 int16_t motor_GetPosition();
 int16_t motor_GetCurrent();
-
+int16_t motor_GetPWM();
 #endif /* MOTOR_H_ */

@@ -69,7 +69,7 @@ int main(void)
 	Systime_Init();
 	motor_Init();
 	MeasureInit();
-	PID_Init(128*5,1,0,&PIDdata);
+	PID_Init(64,1,0,&PIDdata);
 	
 	sei();
 	
@@ -103,6 +103,7 @@ int main(void)
 			LED1_Off();
 			//koda traja xy us (140 us before hardware abstraction was implemented)
 		}
+		
 		// na 2 ms
 		if (Has_X_MillisecondsPassed(TIME_SLICE_MS,&mark1))
 		{
@@ -112,9 +113,7 @@ int main(void)
 		//Report Status to the GUI
 		if (Has_X_MillisecondsPassed(STATUS_REPORTING_PERIOD,&mark2))
 		{
-			length=PrepareStatusMessage(GetSysTick(), Measured.flow, 
-					Measured.pressure, Measured.volume_t, 
-					motor_GetPosition(), motor_GetCurrent(), OCR1A, msg);
+			length=PrepareStatusMessage(GetSysTick(), Measured.flow, Measured.pressure, Measured.volume_t, motor_GetPosition(), motor_GetCurrent(), motor_GetPWM(), Control.BreathCounter, Control.status, Control.Error, msg);
 			UART0_SendBytes(msg,length);
 		}
 	}

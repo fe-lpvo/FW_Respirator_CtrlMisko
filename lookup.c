@@ -31,15 +31,18 @@ int16_t Lookup( uint16_t x_value, lookup_table_t *tabela)
 	//check if x data lies in table
 	if(x_norm > (tabela->step * (tabela->table_size - 1)))
 	{
-		return 0; // this means error
+		element_index == tabela->table_size;
 	}
-	if(x_value < tabela->x_min)
+	else if(x_value < tabela->x_min)
 	{
-		return 0;
+		element_index=0;
 	}
-	
-	//find the closest smaller element in table_size
-	element_index = x_norm / tabela->step;
+	else
+	{
+		//find the closest smaller element in table_size
+		element_index = x_norm / tabela->step;	
+	}
+
 	if(element_index == tabela->table_size - 1) // this means we are accessing last element in table. Just return it's value, otherwise [element_index + 1] will fail
 	{
 		if(tabela->location == LOCATION_RAM)

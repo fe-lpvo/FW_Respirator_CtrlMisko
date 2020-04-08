@@ -13,7 +13,7 @@
 #include <stddef.h>
 
 //app defines
-#define MSG_CORE_LENGTH	16
+#define MSG_CORE_LENGTH	20
 #define TIME_SLICE_MS	2	//Timeslice in ms
 #define STATUS_REPORTING_PERIOD	10	// ms
 
@@ -54,25 +54,34 @@ typedef struct RESPIRATOR_SETTINGS{
 	uint16_t PeakInspPressure;
 } RespSettings_t;
 
-//measurement factors
-#define VOLUME_ADJ_FACTOR	TIME_SLICE_MS/1024
 
 //Measured Parameters
+
+typedef enum
+{
+	VOLUME_STOP,
+	VOLUME_INTEGRATE,
+	VOLUME_RESET
+} MeasureVolumeMode_t;
+
 typedef struct MEASURED_PARAMS{
 	int16_t flow;
 	int16_t pressure;
 	int16_t volume_t;
+	MeasureVolumeMode_t volume_mode;
 } MeasuredParams_t;
 
 
 //Control Parameters
 #define CTRL_PAR_MODE_STOP				0
 #define CTRL_PAR_MODE_TARGET_SPEED		1
-#define CTRL_PAR_MODE_TARGET_POSITION	2
-#define CTRL_PAR_MODE_REGULATE_PRESSURE	3
-#define CTRL_PAR_MODE_REGULATE_VOLUME	4
+#define CTRL_PAR_MODE_TARGET_POSITION_INHALE	2
+#define CTRL_PAR_MODE_TARGET_POSITION	3
+#define CTRL_PAR_MODE_REGULATE_PRESSURE	4
+#define CTRL_PAR_MODE_REGULATE_VOLUME	5
+#define CTRL_PAR_MODE_REGULATE_FLOW		6
 
-#define CTRL_PAR_MAX_POSITION	1023
+#define CTRL_PAR_MAX_POSITION	103
 #define CTRL_PAR_MIN_POSITION	0
 
 typedef struct CONTROL_PARAMS{
@@ -85,6 +94,9 @@ typedef struct CONTROL_PARAMS{
 	int16_t max_speed;	//0-1023 speed limit for target position mode - not yet used / does it make sense?
 	int16_t target_pressure;
 	int16_t target_volume;
+	int16_t BreathCounter;	//steje vdihe
+	uint8_t status;	//stanje state machina za dihanje
+	uint8_t Error;	//napake (bitwise)
 } CtrlParams_t;
 
 

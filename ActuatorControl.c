@@ -34,23 +34,23 @@ void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, pidData_
 	int16_t newDC;
 	#define MAX_DC_CHANGE	5
 	//TODO: Test for errors due to variable length!!!
-	Control->cur_position = ((int32_t)motor_GetPosition() * 1024)/MOTOR_POS_CLOSED;
+	Control->cur_position = motor_GetPosition();
 	//TODO: determine appropriate multiplier for speed. Current time difference is 5 ms 
 	Control->cur_speed = Control->cur_position - Control->last_position;
 	
 	switch(Control->mode)
 	{
-		case CTRL_PAR_MODE_STOP:{
+		case CTRL_PAR_MODE_STOP:
 			motor_SetDutyCycle(0);
 			PID_Reset_Integrator(PIDdata);
 			break;
-		}
-		case CTRL_PAR_MODE_TARGET_SPEED:{
+		
+		case CTRL_PAR_MODE_TARGET_SPEED:
 			if (Control->target_speed > 0)
 			{
 				if (Control->cur_position < CTRL_PAR_MAX_POSITION)	//Obey if within limits
 				{
-					motor_SetDirVdih();
+					motor_SetDir(MOTOR_DIR_VDIH);
 					motor_SetDutyCycle(Control->target_speed);
 				}
 				else
@@ -62,7 +62,7 @@ void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, pidData_
 			{
 				if (Control->cur_position > CTRL_PAR_MIN_POSITION)	//Obey if within limits
 				{
-					motor_SetDirIzdih();
+					motor_SetDir(MOTOR_DIR_IZDIH);
 					motor_SetDutyCycle(-Control->target_speed);	//if and negation is probably faster than abs()
 				}
 				else
@@ -71,20 +71,44 @@ void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, pidData_
 				}
 			}
 			break;
-		}
-		case CTRL_PAR_MODE_TARGET_POSITION:{
+
+		
+		case CTRL_PAR_MODE_TARGET_POSITION_INHALE:
+
 			newDC=0;
 			if (Control->target_position - Control->cur_position >= 0)
 			{
-				if (Control->target_position - Control->cur_position > 2) newDC=MAX_DC;
+				if (Control->target_position - Control->cur_position > 2) newDC=MOTOR_MAX_DC;
+				else
+				{
+					newDC = MOTOR_MAX_DC/2;
+					//Control->mode=CTRL_PAR_MODE_STOP;
+				}
+			}
+			//if ((newDC-lastDC) > MAX_DC_CHANGE) {newDC = lastDC + MAX_DC_CHANGE;}
+			//else if ((newDC-lastDC) < -MAX_DC_CHANGE) {newDC = lastDC-MAX_DC_CHANGE;}
+			newDC=FIR(newDC);
+			if (newDC > 0)
+			{
+				motor_SetDir(MOTOR_DIR_VDIH);
+				motor_SetDutyCycle(newDC);
+			}
+			
+		break;
+		
+		case CTRL_PAR_MODE_TARGET_POSITION:
+			newDC=0;
+			if (Control->target_position - Control->cur_position >= 0)
+			{
+				if (Control->target_position - Control->cur_position > 2) newDC=MOTOR_MAX_DC/2;
 				else
 				{
 					Control->mode=CTRL_PAR_MODE_STOP;
 				}
 			}
-			else //if (Control->target_position - Control->cur_position < 0)
+			if (Control->target_position - Control->cur_position < 0)
 			{
-				if (Control->target_position - Control->cur_position < -2) newDC=-MAX_DC/4;
+				if (Control->target_position - Control->cur_position < -2) newDC=-MOTOR_MAX_DC/4;
 				else
 				{
 					Control->mode=CTRL_PAR_MODE_STOP;
@@ -96,53 +120,35 @@ void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, pidData_
 			newDC=FIR(newDC);
 			if (newDC > 0)
 			{
-				motor_SetDirVdih();
+				motor_SetDir(MOTOR_DIR_VDIH);
 				motor_SetDutyCycle(newDC);
 			}
 			else
 			{
-				motor_SetDirIzdih();
+				motor_SetDir(MOTOR_DIR_IZDIH);
 				motor_SetDutyCycle(-newDC);
 			}
-			break;
-		}
-		case CTRL_PAR_MODE_REGULATE_PRESSURE:{
+		break;
+		
+		case CTRL_PAR_MODE_REGULATE_PRESSURE:
 			motorSpeed = PID_Calculate(Control->target_pressure/16, Measured->pressure/16, PIDdata);
+			//motorSpeed = FIR(motorSpeed);
+			motor_SetDir(MOTOR_DIR_VDIH);
 			
-			if (motorSpeed > 0)
+		/*	if (Control->cur_position >= CTRL_PAR_MAX_POSITION)
 			{
-				if (Control->cur_position >= CTRL_PAR_MAX_POSITION)
-				{
-					Control->mode=CTRL_PAR_MODE_STOP;
-					motorSpeed = 0;
-				}
+				Control->mode=CTRL_PAR_MODE_STOP;
+				motorSpeed = MOTOR_MIN_DC;
 			}
-			else if (motorSpeed < 0)
+			else*/
 			{
-				if (Control->cur_position <= 0)
-				{
-					Control->mode=CTRL_PAR_MODE_STOP;
-					motorSpeed=0;
-				}
+				if (motorSpeed<MOTOR_MIN_DC) motorSpeed = MOTOR_MIN_DC;					
 			}
-			if (motorSpeed != 0)
-			{
-				motorSpeed=FIR(motorSpeed);
-				if (motorSpeed > 0)
-				{
-					motor_SetDirVdih();
-					motor_SetDutyCycle(motorSpeed);
-				}
-				else
-				{
-					motor_SetDirIzdih();
-					motor_SetDutyCycle(-motorSpeed);
-				}
-			}
-			else motor_SetDutyCycle(0);
-			break;
-		}
-		case CTRL_PAR_MODE_REGULATE_VOLUME:{
+			motor_SetDutyCycle(motorSpeed);	
+		break;
+
+		
+		case CTRL_PAR_MODE_REGULATE_VOLUME:
 			motorSpeed = PID_Calculate(Control->target_volume, Measured->volume_t, PIDdata);
 			
 			if (motorSpeed == 0)
@@ -158,7 +164,7 @@ void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, pidData_
 				}
 				else
 				{
-					motor_SetDirVdih();
+					motor_SetDir(MOTOR_DIR_VDIH);
 					//Is there a need to transform linear motorSpeed to something unlinear for the motor?
 					motor_SetDutyCycle(motorSpeed);
 				}
@@ -172,12 +178,12 @@ void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, pidData_
 				}
 				else
 				{
-					motor_SetDirIzdih();
+					motor_SetDir(MOTOR_DIR_IZDIH);
 					motor_SetDutyCycle(motorSpeed);
 				}
 			}
-			break;
-		}
+		break;
+
 		default: //Error: Stop immediately
 		ReportError(ActuatorCtrlUnknownMode,NULL/*"Unknown actuator control mode"*/);
 		Control->mode=CTRL_PAR_MODE_TARGET_POSITION;
