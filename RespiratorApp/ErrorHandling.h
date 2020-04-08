@@ -35,6 +35,8 @@ typedef enum ErrCodes
 	ComRxInhaleOutsideLimits = 0x22,
 	ComRxExhaleOutsideLimits = 0x23,
 	ComRxVolumeOutsideLimits = 0x24,
+	ComRxBreathingRateOtsideLimits = 0x25,
+	ComRxPEEPPutsideLimits = 0x26,
 	ActuatorCtrlUnknownMode = 0x30,
 	ModeUnknownMode = 0x40,
 	ModeC_VCV_UnknownState = 0x41,

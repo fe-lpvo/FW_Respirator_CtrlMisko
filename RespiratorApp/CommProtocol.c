@@ -48,12 +48,18 @@ int PrepareStatusMessage(uint32_t timestamp, int16_t Flow, int16_t Pressure, int
 //
 //Example:
 //>M V\n
-void ProcessMessages(char data, RespSettings_t* Settings)
+void ProcessMessages(char data, RespSettings_t* Settings, comand_params_t** comands)
 {
-	static uint8_t state;
-	static char param;
-	static int32_t value;
-	
+	static uint8_t state = 0;
+	static char param, saved_param;
+	static int32_t value, saved_value;
+	static char string[15];
+	static char str_ptr = 0;
+	uint32_t converter;
+	uint8_t number;
+	uint8_t n;
+
+		
 	switch (state)
 	{
 		case 0:	{//Waiting for STX
@@ -67,9 +73,12 @@ void ProcessMessages(char data, RespSettings_t* Settings)
 				case 'R':
 				case 'I':
 				case 'E':
-				case 'V':	//known parameter
+				case 'V':	
+				case 'A':
+				case 'P': //known parameter
 				{
 					param = data;
+					saved_param = data;
 					state++;
 					break;
 				}
@@ -83,8 +92,12 @@ void ProcessMessages(char data, RespSettings_t* Settings)
 			break;
 		}
 		case 2: {//Waiting for space
-			if (data == ' ') state++;
-			else{
+			if (data == ' ') 
+			{
+				state++;
+			}
+			else
+			{
 				ReportError(ComRxNoSpaceAfterParam,NULL/*"Space missing after parameter"*/);
 				state=0;
 			}
@@ -111,7 +124,7 @@ void ProcessMessages(char data, RespSettings_t* Settings)
 			}
 			else	//Parameters with ASCII numerical value:
 			{		// R, I, E, V
-				if (data >= '0' && data <= '9'){ value=value*10+data-'0'; break;}
+				if (data >= '0' && data <= '9'){ value=value*10+data-'0'; saved_value = value; break;}
 				else if (data == '\n') {state++;}	// !DO NOT BREAK HERE AS THE LAST CHAR IS ETX!
 				else {
 					ReportError(ComRxExpectingNumber,NULL/*"Expecting numerical value, received something else"*/);
@@ -125,21 +138,34 @@ void ProcessMessages(char data, RespSettings_t* Settings)
 		case 4:	{//Wait for ETX
 			if (data == '\n')	//Yes! ETX received, communication finished, validate param value range
 			{
+				
 				switch (param){
 					case 'M': Settings->new_mode = value; break;
-					case 'R': if ((value >= SETTINGS_RAMPUP_MIN) && (value <= SETTINGS_RAMPUP_MAX)) Settings->P_ramp=value;
-							  else ReportError(ComRxRampOutsideLimits,NULL/*"Received rampup value outside limits"*/);
+					case 'R': if ((value >= comands[COM_RAMPUP]->param_min) && (value <= comands[COM_RAMPUP]->param_min)) Settings->P_ramp=value;
+							  else ReportError(ComRxRampOutsideLimits, NULL/*"Received rampup value outside limits"*/);
 							  break;
-					case 'I': if ((value >= SETTINGS_INHALE_TIME_MIN) && (value <= SETTINGS_INHALE_TIME_MAX)) Settings->inspiratory_t=value;
-								else ReportError(ComRxRampOutsideLimits,NULL/*"Received rampup value outside limits"*/);
+					
+					case 'I': if ((value >= comands[COM_INSPIRATION_TIME].param_min) && (value <= comands[COM_INSPIRATION_TIME].param_max)) Settings->inspiratory_t=value;
+								else ReportError(ComRxRampOutsideLimits, NULL/*"Received rampup value outside limits"*/);
 								break;
-					case 'E': if ((value >= SETTINGS_EXHALE_TIME_MIN) && (value <= SETTINGS_EXHALE_TIME_MAX)) Settings->expiratory_t=value;
-								else ReportError(ComRxRampOutsideLimits,NULL/*"Received rampup value outside limits"*/);
+					
+					case 'E': if ((value >= comands[COM_EXPIRATION_TIME].param_min) && (value <= comands[COM_EXPIRATION_TIME].param_max)) Settings->expiratory_t=value;
+								else ReportError(ComRxRampOutsideLimits, NULL/*"Received rampup value outside limits"*/);
 								break;
-					case 'V': if ((value >= SETTINGS_VOLUME_MIN) && (value <= SETTINGS_VOLUME_MAX)) Settings->volume_t=value;
-								else ReportError(ComRxRampOutsideLimits,NULL/*"Received rampup value outside limits"*/);
+					
+					case 'V': if ((value >= comands[COM_VOLUME].param_min) && (value <= comands[COM_VOLUME].param_max)) Settings->volume_t=value;
+								else ReportError(ComRxRampOutsideLimits, NULL/*"Received rampup value outside limits"*/);
+								break;
+								
+					case 'A': if ((value >= comands[COM_BREATH_RATE].param_min) && (value <= comands[COM_BREATH_RATE].param_max)) Settings->volume_t=value;
+								else ReportError(ComRxBreathingRateOtsideLimits, NULL/*"Received rampup value outside limits"*/);
+								break;
+					
+					case 'P': if ((value >= comands[COM_PEEP].param_min) && (value <= comands[COM_PEEP].param_max)) Settings->volume_t=value;
+								else ReportError(ComRxPEEPPutsideLimits, NULL/*"Received rampup value outside limits"*/);
 								break;
 				}
+				//state++;
 			}
 			else
 			{
@@ -153,6 +179,46 @@ void ProcessMessages(char data, RespSettings_t* Settings)
 			state=0;
 			break;
 	}
+	/*
+	case 5: // create writeback string
+		string[str_ptr++] = '>'; /* write starting character 
+		string[str_ptr++] = saved_param /* write comand type 
+		str_ptr[str_ptr++] = ' '; /* Add space 
+		if(saved_param == 'M') /* If message was setting new mode
+		{
+			switch (value)
+			{
+				case MODE_STOP:
+					str_ptr[str_ptr++] = '0';
+				case MODE_C_VCV:
+					str_ptr[str_ptr++] = 'V';
+				case MODE_C_PCV:
+					str_ptr[str_ptr++] = 'P';
+				case MODE_CPAP:
+					str_ptr[str_ptr++] = 'C';
+			}
+		}
+		else /* Convert number to ASCII - the HARD way 
+		{
+			converter = saved_value;
+			n = 1;
+			while(converter > 0)
+			{
+				number = converter % (10000 / n);
+				if(number != 0)
+				{
+					str_ptr[str_ptr++] = number + '0';
+				}
+				converter /= 10;
+				n++;
+			}
+
+		}
+		*/
+		
+	
+		
+	
 	
 	if (data == '>' && state != 1)
 	{
@@ -161,3 +227,4 @@ void ProcessMessages(char data, RespSettings_t* Settings)
 		ReportError(ComRxUnexpectedStx,NULL/*"An STX character was received in the middle of a message - restarting state machine"*/);
 	}
 }
+

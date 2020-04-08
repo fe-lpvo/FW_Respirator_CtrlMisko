@@ -11,8 +11,10 @@
 
 #include "CommonDefinitions.h"
 #include "ErrorHandling.h"
+#include "Comands.h"
 
 int PrepareStatusMessage(uint32_t timestamp, int16_t Flow, int16_t Pressure, int16_t Volume, int16_t MotorPosition, char *p_msg);
+void ProcessMessages(char data, RespSettings_t* Settings, comand_params_t **comands);
 
 
 #endif /* COMMPROTOCOL_H_ */

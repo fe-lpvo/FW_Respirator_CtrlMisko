@@ -16,7 +16,8 @@ typedef enum {
 				COM_EXPIRATION_TIME,
 				COM_VOLUME,
 				COM_BREATH_RATE,
-				COM_PEEP
+				COM_PEEP,
+				COM_MAX_PRESS
 			}comand_list_t;
 			
 typedef enum {

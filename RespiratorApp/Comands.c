@@ -14,5 +14,6 @@ const comand_params_t device_comands[COMANDS_NBR] = {
 											{COM_EXPIRATION_TIME, 'E', PARAM_U16, 10, 5000},
 											{COM_VOLUME, 'V', PARAM_U16, 100, 1000},
 											{COM_BREATH_RATE, 'A', PARAM_U8, 1, 20},
-											{COM_PEEP, 'P', PARAM_U8, 0, 20}		
+											{COM_PEEP, 'P', PARAM_U8, 0, 20},
+											{COM_MAX_PRESS, 'T', PARAM_U8, 1, 100}	
 									   };
