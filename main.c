@@ -25,6 +25,9 @@
 #include "UART0_IRQ.h"
 #include "Measure.h"
 
+/*Include these for testing */
+#include "parser_test.h"
+
 //int32_t yy[100];	//global da compiler ne odoptimizira
 
 int main(void)
@@ -63,6 +66,8 @@ int main(void)
 	//duration of the break (maybe ms resolution RTC)?
 	//maybe also external RAM with backup battery? Or FRAM?
 		
+	/*Uncoment next line to enable LCD */
+	/* LCD_Init(); */
 	LED_Init();
 	ADC_Init();
 	UART0_Init();
@@ -72,6 +77,9 @@ int main(void)
 	PID_Init(64,1,0,&PIDdata);
 	
 	sei();
+	
+	/* Uncoment next line for parser testing*/
+	/* test_parser(); */
 	
 	while (1)
 	{

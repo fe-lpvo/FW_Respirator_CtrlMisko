@@ -42,6 +42,13 @@
 #define SETTINGS_EXHALE_TIME_MAX	10000
 #define SETTINGS_VOLUME_MIN			100
 #define SETTINGS_VOLUME_MAX			1000
+#define SETTINGS_BREATHING_R_MAX	20
+#define SETTINGS_BREATHING_R_MIN	1
+#define SETTINGS_PEEP_MAX			20
+#define SETTINGS_PEEP_MIN			0
+#define SETTINGS_PRESSURE_MAX		100
+#define SETTINGS_PRESSURE_MIN		1
+
 
 //Settings
 typedef struct RESPIRATOR_SETTINGS{
@@ -51,6 +58,8 @@ typedef struct RESPIRATOR_SETTINGS{
 	uint16_t inspiratory_t;
 	uint16_t expiratory_t;
 	uint16_t volume_t;
+	uint8_t breathing_rate;
+	uint8_t PEEP;
 	uint16_t PeakInspPressure;
 } RespSettings_t;
 

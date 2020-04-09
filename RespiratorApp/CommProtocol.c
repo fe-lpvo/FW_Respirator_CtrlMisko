@@ -64,9 +64,9 @@ int16_t MotorCurrent, int16_t MotorDutyCycle, uint16_t BreathCounter, uint8_t St
 //
 //Example:
 //>M V\n
-void ProcessMessages(char data, RespSettings_t* Settings)
+void ProcessMessages(char data, RespSettings_t* Settings, uint8_t* newdata)
 {
-	static uint8_t state;
+	static uint8_t state = 0;
 	static char param;
 	static int32_t value;
 	
@@ -84,6 +84,9 @@ void ProcessMessages(char data, RespSettings_t* Settings)
 				case 'I':
 				case 'E':
 				case 'V':	//known parameter
+				case 'A':
+				case 'P':
+				case 'T':
 				{
 					param = data;
 					state++;
@@ -143,19 +146,37 @@ void ProcessMessages(char data, RespSettings_t* Settings)
 			{
 				switch (param){
 					case 'M': Settings->new_mode = value; break;
-					case 'R': if ((value >= SETTINGS_RAMPUP_MIN) && (value <= SETTINGS_RAMPUP_MAX)) Settings->P_ramp=value;
-							  else ReportError(ComRxRampOutsideLimits,NULL/*"Received rampup value outside limits"*/);
+					
+					case 'R': if ((value >= SETTINGS_RAM<PUP_MIN) && (value <= SETTINGS_RAMPUP_MAX)) Settings->P_ramp = value;
+							  else ReportError(ComRxRampOutsideLimits, NULL/*"Received rampup value outside limits"*/);
 							  break;
-					case 'I': if ((value >= SETTINGS_INHALE_TIME_MIN) && (value <= SETTINGS_INHALE_TIME_MAX)) Settings->inspiratory_t=value;
-								else ReportError(ComRxRampOutsideLimits,NULL/*"Received rampup value outside limits"*/);
+					
+					case 'I': if ((value >= SETTINGS_INHALE_TIME_MIN) && (value <= SETTINGS_INHALE_TIME_MAX)) Settings->inspiratory_t = value;
+								else ReportError(ComRxRampOutsideLimits, NULL/*"Received rampup value outside limits"*/);
 								break;
-					case 'E': if ((value >= SETTINGS_EXHALE_TIME_MIN) && (value <= SETTINGS_EXHALE_TIME_MAX)) Settings->expiratory_t=value;
-								else ReportError(ComRxRampOutsideLimits,NULL/*"Received rampup value outside limits"*/);
+					
+					case 'E': if ((value >= SETTINGS_EXHALE_TIME_MIN) && (value <= SETTINGS_EXHALE_TIME_MAX)) Settings->expiratory_t = value;
+								else ReportError(ComRxRampOutsideLimits, NULL/*"Received rampup value outside limits"*/);
 								break;
-					case 'V': if ((value >= SETTINGS_VOLUME_MIN) && (value <= SETTINGS_VOLUME_MAX)) Settings->volume_t=value;
-								else ReportError(ComRxRampOutsideLimits,NULL/*"Received rampup value outside limits"*/);
+					
+					case 'V': if ((value >= SETTINGS_VOLUME_MIN) && (value <= SETTINGS_VOLUME_MAX)) Settings->volume_t = value;
+								else ReportError(ComRxRampOutsideLimits, NULL/*"Received rampup value outside limits"*/);
 								break;
+					
+					case 'A': if ((value >= SETTINGS_BREATHING_R_MIN) && (value <= SETTINGS_BREATHING_R_MAX)) Settings->breathing_rate = value;
+								else ReportError(ComRxBreathingRateOtsideLimits, NULL/*"Received brething rate value outside limits"*/);
+								break;
+
+					case 'P': if ((value >= SETTINGS_PEEP_MIN) && (value <= SETTINGS_PEEP_MAX)) Settings->PEEP = value;
+								else ReportError(ComRxPEEPOutsideLimits, NULL/*"Received PEEP value outside limits"*/);
+								break;
+					
+					case 'T': if ((value >= SETTINGS_PRESSURE_MIN) && (value <=  SETTINGS_PRESSURE_MAX)) Settings->PeakInspPressure = value;
+								else ReportError(ComRxVolumeOutsideLimits, NULL/*"Received volume value outside limits"*/);
+								break;													
 				}
+				state = 0;
+				*newdata = 1;
 			}
 			else
 			{
