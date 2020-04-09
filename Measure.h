@@ -26,7 +26,7 @@ void MeasureVolume(MeasuredParams_t* Measured);
 #define PRESSURE_MAX	(16*918UL)
 #define PRESSURE_SPAN	(PRESSURE_MAX - PRESSURE_MIN)
 #define PRESSURE_ZERO_TRESHOLD	(2*16)
-
+#define PRESSURE_MAX_MMH2O	500
 #define FLOW_ZERO_TRESHOLD	100
 
 #endif /* MEASURE_H_ */

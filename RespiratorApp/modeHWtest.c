@@ -84,7 +84,7 @@ void modeHWtest(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams
 			Measured->volume_mode = VOLUME_RESET;
 			Control->BreathCounter++;
 			Control->mode=CTRL_PAR_MODE_REGULATE_PRESSURE;
-			Control->target_pressure = PRESSURE_TARGET - INHALE_TIME*PRESSURE_INCREMENT;
+			Control->target_pressure = ((int32_t)Settings->target_pressure * PRESSURE_SPAN) / PRESSURE_MAX_MMH2O - Settings->target_inspiratory_time*PRESSURE_INCREMENT;
 			timing=0;
 			dihanje_state++;
 		break;

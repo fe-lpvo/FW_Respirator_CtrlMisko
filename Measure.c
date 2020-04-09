@@ -7,7 +7,7 @@
 #include "Measure.h"
 #include "Lookup.h"
 
-const int16_t flowdata[] PROGMEM = {-3430,-2890,-2368,-1800,-1250,-800,-480,-150,280,825,1395,1990,2490,3000,3440,3887,4345,4790,5220,5550,5950,6300,6700,7050,7400,7770,8078,8377,8670,9000,9300,9600,9900,10162,10488,10900,11300,11700,12100,12500,13000,13400,13800,14200,14627,15055,15448,15789,16058}; 
+const int16_t flowdata[] PROGMEM = {-3430,-2890,-2368,-1800,-1250,-800,-480,-150,280,825,1395,1990,2490,3000,3440,3887,4345,4790,5220,5550,5950,6300,6700,7050,7400,7770,8078,8377,8670,9000,9300,9600,9900,10162,10488,10900,11300,11700,12100,12500,13000,13400,13800,14200,14627,15055,15448,15789,16058};
 	// size = 49, step = 250, xMin = 0
 
 lookup_table_t Flow_table;
@@ -19,14 +19,16 @@ void MeasureInit()
 
 void MeasureFlow(MeasuredParams_t* Measured)
 {
-	int16_t flow;
+	int16_t flow, flow_negative;
 	uint16_t *ADC_Results;
 	
 	ADC_Results=ADC_results_p();
 
 	//TODO: according to calibration adjust scaling
 	//flow = *(ADC_Results+ADC_CH_FLOW) - FLOW_MIN;
-	flow = Lookup(*(ADC_Results+ADC_CH_FLOW),&Flow_table);
+	flow		  = Lookup(*(ADC_Results+ADC_CH_FLOW  ),&Flow_table);
+	flow_negative = Lookup(*(ADC_Results+ADC_CH_FLOW_N),&Flow_table);
+	if (flow < 0) flow = -flow_negative;
 	if (flow<FLOW_ZERO_TRESHOLD && flow>-FLOW_ZERO_TRESHOLD) flow = 0;
 	Measured->flow=flow;
 }

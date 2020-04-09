@@ -10,7 +10,7 @@
 
 #define F_CPU 16000000UL
 #define BAUD1 9600UL
-#define BAUD0 115200UL
+#define BAUD0 1000000UL
 
 
 #endif /* CONFIG_H_ */

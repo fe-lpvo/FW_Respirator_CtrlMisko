@@ -42,7 +42,7 @@ void modeC_VCV(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams_
 		InspiratoryTiming+= TIME_SLICE_MS;
 		//TODO: Tu kaj reguliramo? V konèni fazi bo verjetno treba
 		//...
-		if (InspiratoryTiming >= Settings->P_ramp)	// gremo v constant pressure
+		if (InspiratoryTiming >= Settings->target_Pramp_time)	// gremo v constant pressure
 		{
 			//InspiratoryTiming = 0; //Smatram da nastavitev za inspiratory timing vkljuèuje P_ramp time
 			dihanje_state++;
@@ -54,8 +54,8 @@ void modeC_VCV(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams_
 		//TODO: regulate pressure, adjust target pressure from cycle to cycle to achieve desired volume
 		
 		//Detect end condition of inspiratory cycle
-		if ( (Measured->volume_t >= Settings->volume_t) || 
-			 (InspiratoryTiming > Settings->inspiratory_t))
+		if ( (Measured->volume_t >= Settings->target_volume) || 
+			 (InspiratoryTiming > Settings->target_inspiratory_time))
 		{
 			ExpiratoryTiming = 0;
 			dihanje_state++;
@@ -75,7 +75,7 @@ void modeC_VCV(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams_
 					
 		case 5: //izdih
 		ExpiratoryTiming+=TIME_SLICE_MS;
-		if (InspiratoryTiming > Settings->expiratory_t)	// izdih
+		if (InspiratoryTiming > Settings->target_expiratory_time)	// izdih
 		{
 			dihanje_state=0;
 //			Control->mode = CTRL_PAR_MODE_STOP;	//should not be needed

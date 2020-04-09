@@ -11,7 +11,8 @@ void test_parser (void)
 {
 	RespSettings_t set = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 	char rx_char;
-	uint8_t done = 0, n;
+	uint8_t done = 0;
+	uint8_t n __attribute__((unused));
 		
 	while(1)
 	{
@@ -22,7 +23,7 @@ void test_parser (void)
 			ProcessMessages(rx_char, &set, &done);
 			if(done != 0)
 			{
-				printf("MODE: %u\n\rP_RAMP: %u\n\rINSP_T: %u\n\rEXP_T: %u\n\rVOL: %u\n\rRATE: %u\n\rPEEP: %u\n\rPRESS: %u\n\r", set.new_mode, set.P_ramp, set.inspiratory_t, set.expiratory_t, set.volume_t, set.breathing_rate, set.PEEP, set.PeakInspPressure);
+				printf("MODE: %u\n\rP_RAMP: %u\n\rINSP_T: %u\n\rEXP_T: %u\n\rVOL: %u\n\rRATE: %u\n\rPEEP: %u\n\rPRESS: %u\n\r", set.new_mode, set.target_Pramp_time, set.target_inspiratory_time, set.target_expiratory_time, set.target_volume, set.breathing_rate, set.PEEP, set.PeakInspPressure);
 				done = 0;
 			}
 		}

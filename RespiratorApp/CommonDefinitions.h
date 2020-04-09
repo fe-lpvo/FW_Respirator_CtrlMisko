@@ -27,11 +27,12 @@
 #define MODE_HW_TEST	6
 
 //default settings
-#define SETTINGS_DEFAULT_MODE				MODE_DEFAULT
-#define SETTINGS_DEFAULT_RAMPUP_TIME_MS		100		// 50ms	???	100ms/TIME_SLICE_MS?
-#define SETTINGS_DEFAULT_INHALE_TIME_MS		1250	// 1.25s
-#define SETTINGS_DEFAULT_EXHALE_TIME_MS		3000	//3s
-#define SETTINGS_DEFAULT_VOLUME_ML			250		//500 mililiters?
+#define SETTINGS_DEFAULT_MODE					MODE_DEFAULT
+#define SETTINGS_DEFAULT_RAMPUP_TIME_MS			100		// 50ms	???	100ms/TIME_SLICE_MS?
+#define SETTINGS_DEFAULT_INHALE_TIME_MS			1250	// 1.25s
+#define SETTINGS_DEFAULT_EXHALE_TIME_MS			3000	//3s
+#define SETTINGS_DEFAULT_TARGET_PRESSURE_MBAR	300		//mmH2O
+#define SETTINGS_DEFAULT_TARGET_VOLUME_ML		400		//milliliters
 
 //settings limits
 #define SETTINGS_RAMPUP_MIN			50
@@ -49,20 +50,19 @@
 #define SETTINGS_PRESSURE_MAX		100
 #define SETTINGS_PRESSURE_MIN		1
 
-
 //Settings
 typedef struct RESPIRATOR_SETTINGS{
 	uint8_t current_mode;
 	uint8_t	new_mode;		//If new_mode is different than current mode, do transition
-	uint8_t P_ramp;
-	uint16_t inspiratory_t;
-	uint16_t expiratory_t;
-	uint16_t volume_t;
+	uint8_t target_Pramp_time;
+	uint16_t target_inspiratory_time;
+	uint16_t target_expiratory_time;
+	uint16_t target_volume;
 	uint8_t breathing_rate;
 	uint8_t PEEP;
 	uint16_t PeakInspPressure;
+	uint16_t target_pressure;
 } RespSettings_t;
-
 
 //Measured Parameters
 

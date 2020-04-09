@@ -40,8 +40,8 @@ void modeC_PCV(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams_
 					
 		case 3: //ramp-up
 		InspiratoryTiming+= TIME_SLICE_MS;
-		Control->target_pressure = Settings->PeakInspPressure/Settings->P_ramp*InspiratoryTiming;
-		if (InspiratoryTiming >= Settings->P_ramp)	// gremo v constant pressure
+		Control->target_pressure = Settings->PeakInspPressure/Settings->target_Pramp_time*InspiratoryTiming;
+		if (InspiratoryTiming >= Settings->target_Pramp_time)	// gremo v constant pressure
 		{
 			Control->target_pressure = Settings->PeakInspPressure;
 			dihanje_state++;
@@ -51,7 +51,7 @@ void modeC_PCV(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams_
 		case 4: //constant pressure
 		InspiratoryTiming+=TIME_SLICE_MS;
 		//Detect end condition of inspiratory cycle
-		if (InspiratoryTiming > Settings->inspiratory_t)
+		if (InspiratoryTiming > Settings->target_inspiratory_time)
 		{
 			ExpiratoryTiming = 0;
 			dihanje_state++;
@@ -59,7 +59,7 @@ void modeC_PCV(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams_
 			Control->target_speed = -300;
 		}
 		//Settings->volume_t should contain MAX permisible volume
-		else if (Measured->volume_t >= Settings->volume_t)
+		else if (Measured->volume_t >= Settings->target_volume)
 		{
 			ReportError(Limits_VolumeTooHigh,NULL/*"Error! Max Volume reached before end of cycle"*/);
 			ExpiratoryTiming = 0;
@@ -83,7 +83,7 @@ void modeC_PCV(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams_
 					
 		case 5: //izdih
 		ExpiratoryTiming+=TIME_SLICE_MS;
-		if (InspiratoryTiming > Settings->expiratory_t)	// izdih
+		if (InspiratoryTiming > Settings->target_expiratory_time)	// izdih
 		{
 			dihanje_state=0;
 //			Control->mode = CTRL_PAR_MODE_STOP;	//should not be needed

@@ -147,19 +147,19 @@ void ProcessMessages(char data, RespSettings_t* Settings, uint8_t* newdata)
 				switch (param){
 					case 'M': Settings->new_mode = value; break;
 					
-					case 'R': if ((value >= SETTINGS_RAM<PUP_MIN) && (value <= SETTINGS_RAMPUP_MAX)) Settings->P_ramp = value;
+					case 'R': if ((value >= SETTINGS_RAMPUP_MIN) && (value <= SETTINGS_RAMPUP_MAX)) Settings->target_Pramp_time = value;
 							  else ReportError(ComRxRampOutsideLimits, NULL/*"Received rampup value outside limits"*/);
 							  break;
 					
-					case 'I': if ((value >= SETTINGS_INHALE_TIME_MIN) && (value <= SETTINGS_INHALE_TIME_MAX)) Settings->inspiratory_t = value;
+					case 'I': if ((value >= SETTINGS_INHALE_TIME_MIN) && (value <= SETTINGS_INHALE_TIME_MAX)) Settings->target_inspiratory_time = value;
 								else ReportError(ComRxRampOutsideLimits, NULL/*"Received rampup value outside limits"*/);
 								break;
 					
-					case 'E': if ((value >= SETTINGS_EXHALE_TIME_MIN) && (value <= SETTINGS_EXHALE_TIME_MAX)) Settings->expiratory_t = value;
+					case 'E': if ((value >= SETTINGS_EXHALE_TIME_MIN) && (value <= SETTINGS_EXHALE_TIME_MAX)) Settings->target_expiratory_time = value;
 								else ReportError(ComRxRampOutsideLimits, NULL/*"Received rampup value outside limits"*/);
 								break;
 					
-					case 'V': if ((value >= SETTINGS_VOLUME_MIN) && (value <= SETTINGS_VOLUME_MAX)) Settings->volume_t = value;
+					case 'V': if ((value >= SETTINGS_VOLUME_MIN) && (value <= SETTINGS_VOLUME_MAX)) Settings->target_volume = value;
 								else ReportError(ComRxRampOutsideLimits, NULL/*"Received rampup value outside limits"*/);
 								break;
 					

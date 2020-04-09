@@ -55,10 +55,11 @@ int main(void)
 	//èe se sluèajno pobiramo iz nenamernega reseta
 	Settings.current_mode=MODE_STOP;	
 	Settings.new_mode=MODE_DEFAULT;
-	Settings.P_ramp=SETTINGS_DEFAULT_RAMPUP_TIME_MS;
-	Settings.inspiratory_t=SETTINGS_DEFAULT_INHALE_TIME_MS;
-	Settings.expiratory_t=SETTINGS_DEFAULT_EXHALE_TIME_MS;
-	Settings.volume_t=SETTINGS_DEFAULT_VOLUME_ML;
+	Settings.target_Pramp_time=SETTINGS_DEFAULT_RAMPUP_TIME_MS;
+	Settings.target_inspiratory_time=SETTINGS_DEFAULT_INHALE_TIME_MS;
+	Settings.target_expiratory_time=SETTINGS_DEFAULT_EXHALE_TIME_MS;
+	Settings.target_volume=SETTINGS_DEFAULT_TARGET_VOLUME_ML;
+	Settings.target_pressure = SETTINGS_DEFAULT_TARGET_PRESSURE_MBAR;
 	
 	//TODO: read current state of the machine
 	//Is it possible the get the exact state? 
