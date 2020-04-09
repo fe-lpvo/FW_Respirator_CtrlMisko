@@ -10,6 +10,8 @@
 
 //TODO: Add ability to softly transition to other modes.
 
+//Pri lovljenju ustreznega volumna ima prednost ÈAS (Target inspiratory time)
+
 void modeC_VCV(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams_t* Control)
 {
 	static uint8_t dihanje_state = 0;
