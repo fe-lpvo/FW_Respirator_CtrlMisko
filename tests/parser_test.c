@@ -23,7 +23,9 @@ void test_parser (void)
 			ProcessMessages(rx_char, &set, &done);
 			if(done != 0)
 			{
-				printf("MODE: %u\n\rP_RAMP: %u\n\rINSP_T: %u\n\rEXP_T: %u\n\rVOL: %u\n\rRATE: %u\n\rPEEP: %u\n\rPRESS: %u\n\r", set.new_mode, set.target_Pramp_time, set.target_inspiratory_time, set.target_expiratory_time, set.target_volume, set.breathing_rate, set.PEEP, set.PeakInspPressure);
+//				printf("MODE: %u\n\rP_RAMP: %u\n\rINSP_T: %u\n\rEXP_T: %u\n\rVOL: %u\n\rRATE: %u\n\rPEEP: %u\n\rPRESS: %u\n\r", set.new_mode, set.target_Pramp_time, set.target_inspiratory_time, set.target_expiratory_time, set.target_volume, set.breathing_rate, set.PEEP, set.PeakInspPressure);
+//Breathing rate = 60000ms / (INSP_T + EXP_T)
+				printf("MODE: %u\n\rP_RAMP: %u\n\rINSP_T: %u\n\rEXP_T: %u\n\rVOL: %u\n\rPEEP: %u\n\rPRESS: %u\n\r", set.new_mode, set.target_Pramp_time, set.target_inspiratory_time, set.target_expiratory_time, set.target_volume, set.PEEP, set.PeakInspPressure);
 				done = 0;
 			}
 		}
