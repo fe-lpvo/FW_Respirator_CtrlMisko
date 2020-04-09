@@ -38,12 +38,12 @@ void motor_Init()
 	MotorDir = MOTOR_DIR_UNDEFINED;
 }
 
-ISR (INT0_vect)//SWA
+ISR (INT0_vect)//SWA - jaws locked
 {
 	OCR1A = MOTOR_MIN_DC;
 }
 
-ISR(INT1_vect)//SWB
+ISR(INT1_vect)//SWB - jaws opened
 {
 	OCR1A = 0;
 }
