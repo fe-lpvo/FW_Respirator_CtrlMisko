@@ -27,7 +27,7 @@ int32_t FIR(int16_t new_x)
 	return (y>>15);
 }
 
-void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, pidData_t *PIDdata)
+void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, RespSettings_t *Settings, pidData_t *PIDdata)
 {
 	int16_t motorSpeed;
 	//static int16_t lastDC;
@@ -130,6 +130,10 @@ void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, pidData_
 			}
 		break;
 		
+		case CTRL_PAR_MODE_REGULATE_PRESSURE_PID_RESET:
+			PID_Init(Settings->PID_P,Settings->PID_I,Settings->PID_D,PIDdata);
+			//PID_Reset_Integrator(PIDdata);	//
+			Control->mode=CTRL_PAR_MODE_REGULATE_PRESSURE;
 		case CTRL_PAR_MODE_REGULATE_PRESSURE:
 			motorSpeed = PID_Calculate(Control->target_pressure/16, Measured->pressure/16, PIDdata);
 			//motorSpeed = FIR(motorSpeed);
@@ -190,6 +194,5 @@ void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, pidData_
 		motor_SetDutyCycle(0);
 		break;
 	}
-	//lastDC = newDC;
 	Control->last_position = Control->cur_position;
 }
