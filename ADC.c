@@ -13,6 +13,7 @@ uint8_t ADC_channel = 0;
 uint8_t ADC_complete = 0;
 static volatile uint16_t Filter_Array_0[ADC_FILTER_N];
 static volatile uint16_t Filter_Array_1[ADC_FILTER_N];
+static volatile uint16_t Filter_Array_4[ADC_FILTER_N];
 uint16_t ADC_results_int[5]={0,0,0,0,0};	// interni rezultati - double buffering
 #ifdef ADC_DOUBLE_BUFFERING
 	uint16_t ADC_results[5];	//rezultati, ki se vrnejo v main - inicializacija na 0 zagotovljena
@@ -23,7 +24,7 @@ void ADC_Init()
 {
 	ADMUX |= (1<<REFS0) | (1<<MUX0); //Vcc and starting with ADC1
 	ADCSRA |= (1<<ADEN) | (1<<ADIE) | (1<<ADPS0) | (1<<ADPS1) | (1<<ADPS2); //Enable ADC, INT, prescaler 128
-	DIDR0 |= (1<<ADC0D) | (1<<ADC1D) | (1<<ADC2D) | (1<<ADC3D);
+	DIDR0 |= (1<<ADC0D) | (1<<ADC1D) | (1<<ADC2D) | (1<<ADC3D) | (1<<ADC4D);
 	ADC_channel = ADC_STARTCHAN;
 	filter_count = 0;
 	filter_count_old = 1;
@@ -31,6 +32,7 @@ void ADC_Init()
 	{
 		Filter_Array_0[i]=0;
 		Filter_Array_1[i]=0;
+		Filter_Array_4[i]=0;
 	}
 }
 
@@ -77,7 +79,6 @@ ISR(ADC_vect)
 		case 0: // moving average filter za kanal 0
 			Filter_Array_0[filter_count] = ADC;
 			ADC_results_int [ADC_channel] += ADC;
-			ADC_results_int [4] += ADC;	// integral
 			ADC_results_int [ADC_channel] -= Filter_Array_0[filter_count_old];
 		break;
 		
@@ -85,6 +86,12 @@ ISR(ADC_vect)
 			Filter_Array_1[filter_count] = ADC;
 			ADC_results_int [ADC_channel] += ADC;
 			ADC_results_int [ADC_channel] -= Filter_Array_1[filter_count_old];
+		break;
+
+		case 4: // moving average filter za kanal 4
+			Filter_Array_4[filter_count] = ADC;
+			ADC_results_int [ADC_channel] += ADC;
+			ADC_results_int [ADC_channel] -= Filter_Array_4[filter_count_old];
 			
 			// upravljanje s kazalci na filter bufferje
 			filter_count++;
