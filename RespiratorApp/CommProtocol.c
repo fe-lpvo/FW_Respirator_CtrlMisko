@@ -96,7 +96,8 @@ int ReportAllCurrentSettings(char *p_msg, int MAX_LENGTH, RespSettings_t *Settin
 		p_msg++;
 
 		memcpy(p_msg,Settings,sizeof(RespSettings_t));
-
+		
+		p_msg+=sizeof(RespSettings_t);
 		*p_msg = 0xAA;
 	}
 	else
@@ -183,10 +184,20 @@ void ProcessMessages(char data, RespSettings_t* Settings, uint8_t* newdata)
 			{
 				switch (data)
 				{
-					case '0': value = MODE_STOP; state++; break;
+					/*case '0': value = MODE_STOP; state++; break;
 					case 'V': value = MODE_C_VCV; state++; break;
 					case 'P': value = MODE_C_PCV; state++; break;
 					case 'C': value = MODE_CPAP; state++; break;
+*/					case '0': 
+					case '1': 
+					case '2': 
+					case '3':
+					case '4':
+					case '5':
+					case '6':
+						value = data-'0';
+						state++;
+						break;
 					default:
 					ReportError(ComRxUnknownMode,NULL/*"Unknown mode received"*/);
 					state = 0;

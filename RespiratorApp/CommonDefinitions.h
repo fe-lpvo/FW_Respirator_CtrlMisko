@@ -103,13 +103,16 @@ typedef struct MEASURED_PARAMS{
 
 //Control Parameters
 #define CTRL_PAR_MODE_STOP							0
-#define CTRL_PAR_MODE_TARGET_SPEED					1
-#define CTRL_PAR_MODE_TARGET_POSITION_INHALE		2
-#define CTRL_PAR_MODE_TARGET_POSITION				3
-#define CTRL_PAR_MODE_REGULATE_PRESSURE_PID_RESET	4
-#define CTRL_PAR_MODE_REGULATE_PRESSURE				5
-#define CTRL_PAR_MODE_REGULATE_VOLUME				6
-#define CTRL_PAR_MODE_REGULATE_FLOW					7
+#define CTRL_PAR_MODE_HOLD_MAX_CLOSED_POSITION		1
+#define CTRL_PAR_MODE_TARGET_SPEED					2
+#define CTRL_PAR_MODE_TARGET_POSITION_INHALE		3
+#define CTRL_PAR_MODE_TARGET_POSITION				4
+#define CTRL_PAR_MODE_REGULATE_PRESSURE_PID_RESET	5
+#define CTRL_PAR_MODE_REGULATE_PRESSURE				6
+#define CTRL_PAR_MODE_REGULATE_VOLUME_PID_RESET		7
+#define CTRL_PAR_MODE_REGULATE_VOLUME				8
+#define CTRL_PAR_MODE_REGULATE_FLOW_PID_RESET		9
+#define CTRL_PAR_MODE_REGULATE_FLOW					10
 
 #define CTRL_PAR_MAX_POSITION	103
 #define CTRL_PAR_MIN_POSITION	0
@@ -124,6 +127,7 @@ typedef struct CONTROL_PARAMS{
 	int16_t max_speed;	//0-1023 speed limit for target position mode - not yet used / does it make sense?
 	int16_t target_pressure;
 	int16_t target_volume;
+	int16_t target_flow;
 	int16_t BreathCounter;	//steje vdihe
 	uint8_t status;	//stanje state machina za dihanje
 	uint8_t Error;	//napake (bitwise)

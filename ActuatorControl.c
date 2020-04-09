@@ -44,6 +44,9 @@ void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, RespSett
 			motor_SetDutyCycle(0);
 			PID_Reset_Integrator(PIDdata);
 			break;
+		case CTRL_PAR_MODE_HOLD_MAX_CLOSED_POSITION:
+			motor_SetDutyCycle(MOTOR_MIN_DC);
+			break;
 		
 		case CTRL_PAR_MODE_TARGET_SPEED:
 			if (Control->target_speed > 0)
@@ -132,19 +135,20 @@ void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, RespSett
 		
 		case CTRL_PAR_MODE_REGULATE_PRESSURE_PID_RESET:
 			PID_Init(Settings->PID_P,Settings->PID_I,Settings->PID_D,PIDdata);
-			//PID_Reset_Integrator(PIDdata);	//
 			Control->mode=CTRL_PAR_MODE_REGULATE_PRESSURE;
+			//DO NOT PUT BREAK HERE!
 		case CTRL_PAR_MODE_REGULATE_PRESSURE:
+			//can only regulate inspiration		//pressure span 50mmH2O --> cca 14500 (14500/16 = cca 900)
 			motorSpeed = PID_Calculate(Control->target_pressure/16, Measured->pressure/16, PIDdata);
 			//motorSpeed = FIR(motorSpeed);
 			motor_SetDir(MOTOR_DIR_VDIH);
 			
-		/*	if (Control->cur_position >= CTRL_PAR_MAX_POSITION)
+			if (Control->cur_position >= CTRL_PAR_MAX_POSITION)
 			{
-				Control->mode=CTRL_PAR_MODE_STOP;
+//				Control->mode=CTRL_PAR_MODE_STOP;
 				motorSpeed = MOTOR_MIN_DC;
 			}
-			else*/
+			else
 			{
 				if (motorSpeed<MOTOR_MIN_DC) motorSpeed = MOTOR_MIN_DC;					
 			}
@@ -152,40 +156,42 @@ void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, RespSett
 		break;
 
 		
+		case CTRL_PAR_MODE_REGULATE_VOLUME_PID_RESET:
+			PID_Init(Settings->PID_P,Settings->PID_I,Settings->PID_D,PIDdata);
+			Control->mode=CTRL_PAR_MODE_REGULATE_VOLUME;
 		case CTRL_PAR_MODE_REGULATE_VOLUME:
-			motorSpeed = PID_Calculate(Control->target_volume, Measured->volume_t, PIDdata);
-			
-			if (motorSpeed == 0)
+			//can only regulate inspiration		//volume span 1000, measured span 10000
+			motorSpeed = PID_Calculate(Control->target_volume, Measured->volume_t/10, PIDdata);
+			motor_SetDir(MOTOR_DIR_VDIH);
+			if (Control->cur_position >= CTRL_PAR_MAX_POSITION)
 			{
-				motor_SetDutyCycle(0);
+				//				Control->mode=CTRL_PAR_MODE_STOP;
+				motorSpeed = MOTOR_MIN_DC;
 			}
-			else if (motorSpeed > 0)
+			else
 			{
-				if (Control->cur_position >= CTRL_PAR_MAX_POSITION)
-				{
-					Control->mode=CTRL_PAR_MODE_STOP;
-					motor_SetDutyCycle(0);
-				}
-				else
-				{
-					motor_SetDir(MOTOR_DIR_VDIH);
-					//Is there a need to transform linear motorSpeed to something unlinear for the motor?
-					motor_SetDutyCycle(motorSpeed);
-				}
+				if (motorSpeed<MOTOR_MIN_DC) motorSpeed = MOTOR_MIN_DC;
 			}
-			else if (motorSpeed < 0)
+			motor_SetDutyCycle(motorSpeed);
+		break;
+
+		case CTRL_PAR_MODE_REGULATE_FLOW_PID_RESET:
+			PID_Init(Settings->PID_P,Settings->PID_I,Settings->PID_D,PIDdata);
+			Control->mode=CTRL_PAR_MODE_REGULATE_FLOW;
+		case CTRL_PAR_MODE_REGULATE_FLOW:
+			//can only regulate inspiration		//flow span 150 l/min --> *6 to use approximately the same PID params
+			motorSpeed = PID_Calculate(Control->target_flow*6, Measured->flow*6, PIDdata);	//flow range +-150 l/min
+			motor_SetDir(MOTOR_DIR_VDIH);
+			if (Control->cur_position >= CTRL_PAR_MAX_POSITION)
 			{
-				if (Control->cur_position <= 0)
-				{
-					Control->mode=CTRL_PAR_MODE_STOP;
-					motor_SetDutyCycle(0);
-				}
-				else
-				{
-					motor_SetDir(MOTOR_DIR_IZDIH);
-					motor_SetDutyCycle(motorSpeed);
-				}
+				//				Control->mode=CTRL_PAR_MODE_STOP;
+				motorSpeed = MOTOR_MIN_DC;
 			}
+			else
+			{
+				if (motorSpeed<MOTOR_MIN_DC) motorSpeed = MOTOR_MIN_DC;
+			}
+			motor_SetDutyCycle(motorSpeed);
 		break;
 
 		default: //Error: Stop immediately

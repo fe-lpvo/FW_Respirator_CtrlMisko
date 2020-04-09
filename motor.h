@@ -58,7 +58,7 @@
 
 // maksimalna vredfnost registra za dutycylce
 #define MOTOR_MAX_DC	1023
-#define MOTOR_MIN_DC	200
+#define MOTOR_MIN_DC	150
 // ******************************
 // Konec Uporabniskih nastavitev
 // ******************************

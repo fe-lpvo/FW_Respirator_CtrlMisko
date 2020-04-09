@@ -82,7 +82,7 @@ int main(void)
 	//duration of the break (maybe ms resolution RTC)?
 	//maybe also external RAM with backup battery? Or FRAM?
 		
-	/*Uncoment next line to enable LCD */
+	/*Uncomment next line to enable LCD */
 	/* LCD_Init(); */
 	LED_Init();
 	ADC_Init();
@@ -94,9 +94,9 @@ int main(void)
 	
 	sei();
 	
-	/* Uncoment next line for parser testing*/
+	/* Uncomment next line for parser testing*/
 	/* test_parser(); */
-	
+	int timeout=0;
 	while (1)
 	{
 		// na 2 ms
@@ -140,6 +140,14 @@ int main(void)
 		{
 			length=PrepareStatusMessage(GetSysTick(), Measured.flow, Measured.pressure, Measured.volume_t, motor_GetPosition(), motor_GetCurrent(), motor_GetPWM(), Control.BreathCounter, Control.status, Control.Error, msg);
 			UART0_SendBytes(msg,length);
+			if (timeout > 0 )
+			{
+				timeout --;
+			}
+			else
+			{
+				LED2_Off();
+			}
 		}
 		//Listen for commands
 		if(UART0_DataReady())	//process received data 1 byte per loop
@@ -153,6 +161,8 @@ int main(void)
 			length=ReportAllCurrentSettings(msg,50,&Settings);
 			if (length > 0)
 			{
+				LED2_On();
+				timeout=20;
 				UART0_SendBytes(msg,length);
 			}
 		}

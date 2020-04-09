@@ -12,10 +12,8 @@
 #include "CommonDefinitions.h"
 #include "ErrorHandling.h"
 
-#define PRESSURE_TARGET	(PRESSURE_SPAN*8/10)
+//#define PRESSURE_TARGET	(PRESSURE_SPAN*8/10)
 #define PRESSURE_INCREMENT	1
-#define	INHALE_TIME	2000
-#define EXHALE_TIME 3000
 
 void modeHWtest(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams_t* Control);
 

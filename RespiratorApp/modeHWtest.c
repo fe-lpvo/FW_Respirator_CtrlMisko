@@ -66,7 +66,13 @@ void modeHWtest(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams
 		break;
 		
 		case 3: //start inspiratory cycle
-			//Reload all settings etc.
+			//Reload all settings, if needed change mode, etc.
+			if (Settings->new_mode != MODE_HW_TEST)
+			{
+				Settings->current_mode = Settings->new_mode;
+				dihanje_state = -1;
+				break;
+			}
 			insp_time = Settings->target_inspiratory_time;
 			exp_time = Settings->target_expiratory_time;
 			pramp_time = Settings->target_Pramp_time;
@@ -78,18 +84,18 @@ void modeHWtest(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams
 			//start cycle
 			Measured->volume_mode = VOLUME_RESET;
 			Control->BreathCounter++;
-			Control->mode=CTRL_PAR_MODE_REGULATE_PRESSURE;
+			Control->mode=CTRL_PAR_MODE_REGULATE_PRESSURE_PID_RESET;
 			Control->target_pressure = 0;
 			timing=0;
 			dihanje_state++;
 			//comment-out the next 2 lines when P-ramp is finished
-			Control->target_pressure = ((int32_t)pressure * PRESSURE_SPAN) / PRESSURE_MAX_MMH2O - insp_time*PRESSURE_INCREMENT;
-			dihanje_state++;
+			//Control->target_pressure = ((int32_t)pressure * PRESSURE_SPAN) / PRESSURE_MAX_MMH2O - insp_time*PRESSURE_INCREMENT;
+			//dihanje_state++;
 		break;
 		
 		case 4: //P-ramp
 			timing += TIME_SLICE_MS;
-			Control->target_pressure = ((int32_t)MAXpressure*timing)/pramp_time;
+			Control->target_pressure = ((((int32_t)MAXpressure*timing)/pramp_time) * PRESSURE_SPAN) / PRESSURE_MAX_MMH2O;
 			if (timing >= pramp_time)	// gremo v constant pressure
 			{
 				Control->target_pressure = ((int32_t)pressure * PRESSURE_SPAN) / PRESSURE_MAX_MMH2O - insp_time*PRESSURE_INCREMENT;
@@ -107,17 +113,17 @@ void modeHWtest(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams
 				dihanje_state=0;
 			}
 			//Alternate condition - max volume reached. Should probably issue a warning
-			innertia_offset = ((int32_t)Measured->flow*3)/4;	//ml
+			innertia_offset = 0;//((int32_t)Measured->flow*3)/4;	//ml
 			if (Measured->volume_t > MAXvolume*10 - innertia_offset*10)
 			{
 				LED3_On();
-				dihanje_state++;
+				dihanje_state = 6;
 			}
 			//Errors:
 			if (Control->cur_position >= CTRL_PAR_MAX_POSITION)	//Came too far - wait in this position until insp
 			{
 				LED4_On();
-				dihanje_state++;
+				dihanje_state = 7;
 			}
 		break;
 
@@ -129,6 +135,16 @@ void modeHWtest(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams
 				LED4_Off();
 				dihanje_state=0;
 			}	
+		break;
+
+		case 7: //(Only in case of Error in previous state) motor je prisel do konca, pocakaj, da mine cas vdiha
+		timing += TIME_SLICE_MS;
+		Control->mode = CTRL_PAR_MODE_STOP;
+		if (timing > insp_time)
+		{
+			LED4_Off();
+			dihanje_state=0;
+		}
 		break;
 		
 		default:

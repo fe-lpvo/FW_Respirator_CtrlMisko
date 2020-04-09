@@ -12,6 +12,8 @@
 #include "CommonDefinitions.h"
 #include "ErrorHandling.h"
 
+#define PRESSURE_INCREMENT	1
+
 void modeC_VCV(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams_t* Control);
 
 #endif /* MODEVCV_H_ */
