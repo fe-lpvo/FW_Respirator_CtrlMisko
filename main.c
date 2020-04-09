@@ -6,6 +6,7 @@
  */ 
 
 #include <avr/io.h>
+#include <string.h>
 #include "RespiratorApp/CommonDefinitions.h"
 #include "LCD_Ili9341.h"
 #include "config.h"
@@ -34,7 +35,9 @@ int main(void)
 {
 	char msg[50];
 	int length;
+	char com_data;
 	uint32_t mark1=0, mark2=0;
+	uint8_t newSettingsReceived;
 	uint8_t	operationMode=MODE_DEFAULT;
 	
 	RespSettings_t	Settings;
@@ -42,6 +45,11 @@ int main(void)
 	CtrlParams_t Control;
 	pidData_t PIDdata;	//Same PID params if regulating P or V ? Probably not.
 						//Maybe make PID params local to ActuatorControl?
+	
+	memset(&Settings,0,sizeof(RespSettings_t));
+	memset(&Measured,0,sizeof(MeasuredParams_t));
+	memset(&Control,0,sizeof(CtrlParams_t));
+	memset(&PIDdata,0,sizeof(pidData_t));
 	/*
 	int i;
 	
@@ -59,7 +67,14 @@ int main(void)
 	Settings.target_inspiratory_time=SETTINGS_DEFAULT_INHALE_TIME_MS;
 	Settings.target_expiratory_time=SETTINGS_DEFAULT_EXHALE_TIME_MS;
 	Settings.target_volume=SETTINGS_DEFAULT_TARGET_VOLUME_ML;
+	Settings.PEEP = SETTINGS_DEFAULT_PEEP;
+	Settings.PeakInspPressure = SETTINGS_DEFAULT_MAX_PRESSURE_MBAR;
 	Settings.target_pressure = SETTINGS_DEFAULT_TARGET_PRESSURE_MBAR;
+
+	Settings.PID_P = SETTINGS_DEFAULT_PID_P;
+	Settings.PID_I = SETTINGS_DEFAULT_PID_I;
+	Settings.PID_D = SETTINGS_DEFAULT_PID_D;
+	Settings.MOT_POS = SETTINGS_DEFAULT_MOT_POS;
 	
 	//TODO: read current state of the machine
 	//Is it possible the get the exact state? 
@@ -75,7 +90,7 @@ int main(void)
 	Systime_Init();
 	motor_Init();
 	MeasureInit();
-	PID_Init(64,1,0,&PIDdata);
+	PID_Init(Settings.PID_P,Settings.PID_I,Settings.PID_D,&PIDdata);
 	
 	sei();
 	
@@ -96,7 +111,7 @@ int main(void)
 			//TODO: mode state machines must return HW independent control values
 			switch (operationMode)
 			{
-//				case MODE_STOP:   break;
+				case MODE_STOP:  Control.mode = CTRL_PAR_MODE_STOP; break;
 				case MODE_C_VCV:  modeC_VCV(&Settings, &Measured, &Control); break;
 				case MODE_C_PCV:  modeC_PCV(&Settings, &Measured, &Control); break;
 //				case MODE_AC_VCV:  break;
@@ -108,7 +123,7 @@ int main(void)
 					operationMode = MODE_DEFAULT;
 					break;
 			}
-			ActuatorControl(&Control,&Measured,&PIDdata);
+			ActuatorControl(&Control,&Measured,&Settings,&PIDdata);
 			LED1_Off();
 			//koda traja xy us (140 us before hardware abstraction was implemented)
 		}
@@ -119,11 +134,27 @@ int main(void)
 			ADC_Start_First_Conversion();
 		}
 		
+		
 		//Report Status to the GUI
 		if (Has_X_MillisecondsPassed(STATUS_REPORTING_PERIOD,&mark2))
 		{
 			length=PrepareStatusMessage(GetSysTick(), Measured.flow, Measured.pressure, Measured.volume_t, motor_GetPosition(), motor_GetCurrent(), motor_GetPWM(), Control.BreathCounter, Control.status, Control.Error, msg);
 			UART0_SendBytes(msg,length);
+		}
+		//Listen for commands
+		if(UART0_DataReady())	//process received data 1 byte per loop
+		{
+			UART0_GetByte(&com_data);
+			ProcessMessages(com_data, &Settings, &newSettingsReceived);
+		}
+		if (newSettingsReceived)
+		{
+			newSettingsReceived = 0;
+			length=ReportAllCurrentSettings(msg,50,&Settings);
+			if (length > 0)
+			{
+				UART0_SendBytes(msg,length);
+			}
 		}
 	}
 }
