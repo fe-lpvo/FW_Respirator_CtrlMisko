@@ -78,7 +78,7 @@ void MeasureVolume(MeasuredParams_t* Measured)
 	//if (relative_vol_dif < 80) ReportError();
 	
 	// flow is in 0.01 l/min, but volume should be in cm3. [0.1 cm3/ms] = 10*1000/(60*1000*100) [0.01 l/min]
-	// result will be in 0.1 cm3
+	// result will be in 0.1 cm3 = 0.1 ml
 	
 	Measured->volume_t=volume/600;
 }
