@@ -49,7 +49,7 @@
 
 // meritev pozicije motorja - kanal ADC
 #define MOTOR_POS_CH	ADC_CH_POSITION
-#define MOTOR_POS_RAW_OPEN	830	// --> 0
+#define MOTOR_POS_RAW_OPEN	820	// --> 0
 #define MOTOR_POS_RAW_CLOSED 740	// -->?
 #define MOTOR_POS_BREAKINGPOINT_OPEN 885
 #define MOTOR_POS_BREAKINGPOINT_CLOSED 726
@@ -58,7 +58,7 @@
 
 // maksimalna vredfnost registra za dutycylce
 #define MOTOR_MAX_DC	1023
-#define MOTOR_MIN_DC 200
+#define MOTOR_MIN_DC	200
 // ******************************
 // Konec Uporabniskih nastavitev
 // ******************************
