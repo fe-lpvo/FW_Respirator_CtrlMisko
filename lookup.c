@@ -31,7 +31,7 @@ int16_t Lookup( uint16_t x_value, lookup_table_t *tabela)
 	//check if x data lies in table
 	if(x_norm > (tabela->step * (tabela->table_size - 1)))
 	{
-		element_index = tabela->table_size;
+		element_index = tabela->table_size-1;
 	}
 	else if(x_value < tabela->x_min)
 	{
