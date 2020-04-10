@@ -6,26 +6,7 @@
  */ 
 #include "ActuatorControl.h"
 
-int32_t FIR(int16_t new_x)
-{
-	const int32_t b[]={2, 6, 15, 30, 54, 87, 131, 186, 253, 332, 422, 521, 629, 743, 860, 978, 1093, 1202, 1303, 1393, 1468, 1526, 1566, 1586};
-	#define FILTER_LENGTH (sizeof(b)/sizeof(b[0])*2)
-	static int32_t x[FILTER_LENGTH];
-	static int index=0;
-	int i;
-	int32_t y;
-	
-	x[index]=new_x;
-	y=0;
-	for (i=0; i<FILTER_LENGTH/2; i++)
-	{
-		y+=b[i]*x[(index+FILTER_LENGTH-i)%FILTER_LENGTH] + b[i]*x[(index+1+i)%FILTER_LENGTH];
-	}
-	index++;
-	if (index >= FILTER_LENGTH) index = 0;
-	
-	return (y>>15);
-}
+int32_t FIR(int16_t new_x);
 
 void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, RespSettings_t *Settings, pidData_t *PIDdata)
 {
@@ -132,6 +113,39 @@ void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, RespSett
 				motor_SetDutyCycle(-newDC);
 			}
 		break;
+
+		case CTRL_PAR_MODE_DUMMY_REGULATE_PRESSURE_PID_RESET:
+			PID_Init(Settings->PID_P,Settings->PID_I,Settings->PID_D,PIDdata);
+			Control->mode=CTRL_PAR_MODE_DUMMY_REGULATE_PRESSURE;
+			//DO NOT PUT BREAK HERE!
+		case CTRL_PAR_MODE_DUMMY_REGULATE_PRESSURE:
+			//can only regulate inspiration		//pressure span 50mmH2O --> cca 14500 (14500/16 = cca 900)
+			motorSpeed = PID_Calculate(Control->target_pressure/16, Measured->pressure/16, PIDdata);
+			if (Control->target_speed > 0)
+			{
+				if (Control->cur_position < CTRL_PAR_MAX_POSITION)	//Obey if within limits
+				{
+					motor_SetDir(MOTOR_DIR_VDIH);
+					motor_SetDutyCycle(Control->target_speed);
+				}
+				else
+				{
+					motor_SetDutyCycle(0);	//Stop if too far
+				}
+			}
+			else
+			{
+				if (Control->cur_position > CTRL_PAR_MIN_POSITION)	//Obey if within limits
+				{
+					motor_SetDir(MOTOR_DIR_IZDIH);
+					motor_SetDutyCycle(-Control->target_speed);	//if and negation is probably faster than abs()
+				}
+				else
+				{
+					motor_SetDutyCycle(0);	//Stop if too far
+				}
+			}
+			break;
 		
 		case CTRL_PAR_MODE_REGULATE_PRESSURE_PID_RESET:
 			PID_Init(Settings->PID_P,Settings->PID_I,Settings->PID_D,PIDdata);
@@ -201,4 +215,25 @@ void ActuatorControl(CtrlParams_t* Control, MeasuredParams_t* Measured, RespSett
 		break;
 	}
 	Control->last_position = Control->cur_position;
+}
+
+int32_t FIR(int16_t new_x)
+{
+	const int32_t b[]={2, 6, 15, 30, 54, 87, 131, 186, 253, 332, 422, 521, 629, 743, 860, 978, 1093, 1202, 1303, 1393, 1468, 1526, 1566, 1586};
+	#define FILTER_LENGTH (sizeof(b)/sizeof(b[0])*2)
+	static int32_t x[FILTER_LENGTH];
+	static int index=0;
+	int i;
+	int32_t y;
+	
+	x[index]=new_x;
+	y=0;
+	for (i=0; i<FILTER_LENGTH/2; i++)
+	{
+		y+=b[i]*x[(index+FILTER_LENGTH-i)%FILTER_LENGTH] + b[i]*x[(index+1+i)%FILTER_LENGTH];
+	}
+	index++;
+	if (index >= FILTER_LENGTH) index = 0;
+	
+	return (y>>15);
 }

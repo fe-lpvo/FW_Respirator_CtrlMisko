@@ -209,6 +209,9 @@
     <Compile Include="PID.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="RespiratorApp\modeSTOP.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="RespiratorApp\CommonDefinitions.h">
       <SubType>compile</SubType>
     </Compile>
@@ -240,6 +243,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="RespiratorApp\modeHWtest.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="RespiratorApp\modeSTOP.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="systime.c">

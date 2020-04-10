@@ -22,6 +22,7 @@
 #include "ActuatorControl.h"
 #include "RespiratorApp/modeC_VCV.h"
 #include "RespiratorApp/modeC_PCV.h"
+#include "RespiratorApp/modeSTOP.h"
 #include "RespiratorApp/modeHWtest.h"
 #include "UART0_IRQ.h"
 #include "Measure.h"
@@ -102,7 +103,7 @@ int main(void)
 		// na 2 ms
 		if (ADC_scan_complete())
 		{
-			LED1_On();
+			//LED1_On();
 			// branje ADC:
 			MeasureFlow(&Measured);
 			MeasurePressure(&Measured);
@@ -111,20 +112,41 @@ int main(void)
 			//TODO: mode state machines must return HW independent control values
 			switch (operationMode)
 			{
-				case MODE_STOP:  Control.mode = CTRL_PAR_MODE_STOP; break;
-				case MODE_C_VCV:  modeC_VCV(&Settings, &Measured, &Control); break;
-				case MODE_C_PCV:  modeC_PCV(&Settings, &Measured, &Control); break;
-//				case MODE_AC_VCV:  break;
-//				case MODE_AC_PCV:  break;
-//				case MODE_CPAP:	  break;
-				case MODE_HW_TEST: modeHWtest(&Settings, &Measured, &Control); break;
+				case MODE_STOP:
+					modeSTOP(&Settings, &Measured, &Control);  
+					ActuatorControl(&Control,&Measured,&Settings,&PIDdata); 
+					break;
+				case MODE_C_VCV:
+					modeC_VCV(&Settings, &Measured, &Control);
+					ActuatorControl(&Control,&Measured,&Settings,&PIDdata);
+					break;
+				case MODE_C_PCV:
+					modeC_PCV(&Settings, &Measured, &Control);
+					ActuatorControl(&Control,&Measured,&Settings,&PIDdata);
+					break;
+				case MODE_AC_VCV:
+					modeSTOP(&Settings, &Measured, &Control);
+					ActuatorControl(&Control,&Measured,&Settings,&PIDdata);
+					break;
+				case MODE_AC_PCV:
+					modeSTOP(&Settings, &Measured, &Control);
+					ActuatorControl(&Control,&Measured,&Settings,&PIDdata);
+					break;
+				case MODE_CPAP:
+					modeSTOP(&Settings, &Measured, &Control);
+					ActuatorControl(&Control,&Measured,&Settings,&PIDdata);
+					break;
+				case MODE_HW_TEST: 
+					modeHWtest(&Settings, &Measured, &Control);
+					ActuatorControl(&Control,&Measured,&Settings,&PIDdata);
+					break;
 				default: 
 					ReportError(ModeUnknownMode,NULL/*"Unknown operation mode"*/);
 					operationMode = MODE_DEFAULT;
 					break;
 			}
-			ActuatorControl(&Control,&Measured,&Settings,&PIDdata);
-			LED1_Off();
+			//ActuatorControl(&Control,&Measured,&Settings,&PIDdata);
+			//LED1_Off();
 			//koda traja xy us (140 us before hardware abstraction was implemented)
 		}
 		

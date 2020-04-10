@@ -53,7 +53,10 @@ void motor_SetDutyCycle(uint16_t dutyCycle)
 	if (dutyCycle>MOTOR_MAX_DC) dutyCycle = MOTOR_MAX_DC;
 	if ( MotorDir==MOTOR_DIR_VDIH) // ko stiskamo, ne sme DC nikoli pasti na nic, tudi ce pride do konca
 	{
-		if (!MOTOR_GET_SW_A) OCR1A = dutyCycle;
+		if (!MOTOR_GET_SW_A) 
+		{
+			OCR1A = MOTOR_MIN_DC + ((int32_t)dutyCycle*(MOTOR_MAX_DC-MOTOR_MIN_DC))/MOTOR_MAX_DC;
+		}
 		else OCR1A = MOTOR_MIN_DC;		
 	}
 	else	//izdih
