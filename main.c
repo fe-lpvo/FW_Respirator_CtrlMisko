@@ -27,6 +27,10 @@
 #include "UART0_IRQ.h"
 #include "Measure.h"
 
+/*#ifdef AVR	//Išèem kako ugotoviti ali delamo na AVRju (Miško, Arduino) ali na ARMu. simbol AVR zgleda ok
+#warning AVRjeDefiniran
+#endif*/
+
 /*Include these for testing */
 #include "parser_test.h"
 
