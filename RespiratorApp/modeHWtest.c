@@ -8,21 +8,20 @@
 #include "../GPIO.h"
 #include "../Measure.h"
 
-#define MODE_STATE_FIRST_RUN				-1
-#define MODE_STATE_EXP_START				0
-#define MODE_STATE_EXP_ZERO_POS_WAIT		1
-#define MODE_STATE_EXP_WAIT					2
-#define MODE_STATE_INSP_INIT				3
-#define MODE_STATE_INSP_PREP				4
-#define MODE_STATE_INSP_PRAMP				5
-#define MODE_STATE_INSP_CONST_P				6
-#define MODE_STATE_INSP_MAX_VOL				7
-#define MODE_STATE_INSP_MAX_POS				8
-#define MODE_STATE_INSP_MAX_PRESSURE		9
+enum MODE_STATE
+{
+	MODE_STATE_FIRST_RUN,
+	MODE_STATE_EXP_START,
+	MODE_STATE_EXP_ZERO_POS_WAIT,
+	MODE_STATE_EXP_WAIT,
+	MODE_STATE_INSP_INIT,
+	MODE_STATE_INSP,
+	MODE_STATE_INSP_MAX_POS
+};
 
 void modeHWtest(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams_t* Control)
 {
-	static int8_t dihanje_state = -1;
+	static int8_t MODE_STATE = MODE_STATE_FIRST_RUN;
 	static int16_t timing;
 	
 	#define PRAMP_OFFSET	50
@@ -38,14 +37,14 @@ void modeHWtest(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams
 	static int16_t PreStartBoostTime;
 	int16_t MeasuredPressure = ((int32_t)Measured->pressure * PRESSURE_MAX_MMH2O)/PRESSURE_SPAN;
 	
-	Control->status = dihanje_state;	// shrani stanje dihanja
+	Control->status = MODE_STATE;	// shrani stanje dihanja
 	
 	//State machine starts with exhalation. 
 	//At the end of exhalation all the settings are reloaded into local copies (state 3?).
 	//Local settings are used during the rest of the cycle, 
 	//so that incompatible settings can not be loaded at the wrong time
 
-	switch (dihanje_state)
+	switch (MODE_STATE)
 	{
 		case MODE_STATE_FIRST_RUN:	//First time: init local settings, etc
 			SETinsp_time = Settings->target_inspiratory_time;
@@ -55,13 +54,15 @@ void modeHWtest(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams
 			SETpressure = Settings->target_pressure;
 			MAXpressure = Settings->PeakInspPressure;
 			MAXvolume = Settings->target_volume;
-			dihanje_state=MODE_STATE_EXP_START;
+			MODE_STATE=MODE_STATE_EXP_START;
 			break;
+			
 		case MODE_STATE_EXP_START: // zacetek vdiha, preveri, ce so klesce narazen, sicer jih daj narazen
 			Control->mode = CTRL_PAR_MODE_TARGET_POSITION;
 			Control->target_position  = 0;
+			LED1_On();
 			timing=0;
-			dihanje_state=MODE_STATE_EXP_ZERO_POS_WAIT;
+			MODE_STATE=MODE_STATE_EXP_ZERO_POS_WAIT;
 			LED2_Off();
 			LED3_Off();
 			LED4_Off();
@@ -72,7 +73,7 @@ void modeHWtest(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams
 			if (Control->mode == CTRL_PAR_MODE_STOP)
 			{
 				//reload settings, pid parameters, reset stuff,...
-				dihanje_state=MODE_STATE_EXP_WAIT;
+				MODE_STATE=MODE_STATE_EXP_WAIT;
 			}
 		break;
 
@@ -80,7 +81,7 @@ void modeHWtest(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams
 			timing += TIME_SLICE_MS;
 			if (timing > SETexp_time)
 			{
-				dihanje_state=MODE_STATE_INSP_INIT;
+				MODE_STATE=MODE_STATE_INSP_INIT;
 			}
 		break;
 		
@@ -89,7 +90,7 @@ void modeHWtest(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams
 			if (Settings->new_mode != MODE_HW_TEST)
 			{
 				Settings->current_mode = Settings->new_mode;
-				dihanje_state = MODE_STATE_FIRST_RUN;
+				MODE_STATE = MODE_STATE_FIRST_RUN;
 				break;
 			}
 			SETinsp_time = Settings->target_inspiratory_time;
@@ -103,109 +104,44 @@ void modeHWtest(RespSettings_t* Settings, MeasuredParams_t* Measured, CtrlParams
 			//start cycle
 			Measured->volume_mode = VOLUME_RESET;
 			Control->BreathCounter++;
-			Control->mode=CTRL_PAR_MODE_DUMMY_REGULATE_PRESSURE_PID_RESET;
 			Control->target_speed = 1000;
-			PreStartBoostTime =	23 - SETpramp_time/20;
-			timing=-PreStartBoostTime;
-
-			dihanje_state=MODE_STATE_INSP_PREP;
-			//comment-out the next 2 lines when P-ramp is finished
-			//Control->target_pressure = ((int32_t)pressure * PRESSURE_SPAN) / PRESSURE_MAX_MMH2O - insp_time*PRESSURE_INCREMENT;
-			//dihanje_state++;
-		break;
-		
-		case MODE_STATE_INSP_PREP: //pre-start (get the motor going)
-			Measured->volume_mode = VOLUME_INTEGRATE;
-			timing += TIME_SLICE_MS;
-			if (timing >= 0)
-			{
-				Control->mode=CTRL_PAR_MODE_REGULATE_PRESSURE;
-				Control->target_pressure = ((int32_t)(SET_PEEP+PRAMP_OFFSET) * PRESSURE_SPAN) / PRESSURE_MAX_MMH2O;
-				dihanje_state=MODE_STATE_INSP_PRAMP;
-				SETexp_time = SETexp_time - PreStartBoostTime;
-				timing=0;
-				LED4_On();
-			}
-			if (MeasuredPressure > SETpressure) 
-			{
-				Control->mode = CTRL_PAR_MODE_REGULATE_PRESSURE;
-				Control->target_pressure = ((int32_t)SETpressure * PRESSURE_SPAN) / PRESSURE_MAX_MMH2O - SETinsp_time*PRESSURE_INCREMENT;
-				LED2_On();
-				SETexp_time = SETexp_time - (PreStartBoostTime + timing);
-				timing = 0;
-				dihanje_state = MODE_STATE_INSP_CONST_P;	//direktno na const. pressure step
-			}
-			break;
+			Control->mode=CTRL_PAR_MODE_TARGET_SPEED;
+			MODE_STATE=MODE_STATE_INSP;
+			timing = 0;
 			
-		case MODE_STATE_INSP_PRAMP: //P-ramp
-			LED1_On();
-			timing += TIME_SLICE_MS;
-			Control->target_pressure = ((((SETpressure-SET_PEEP-PRAMP_OFFSET)*(int32_t)timing)/SETpramp_time + SET_PEEP+PRAMP_OFFSET) * PRESSURE_SPAN) / PRESSURE_MAX_MMH2O - SETinsp_time*PRESSURE_INCREMENT;
-			if (timing >= SETpramp_time)	// gremo v constant pressure
-			{
-				Control->target_pressure = ((int32_t)SETpressure * PRESSURE_SPAN) / PRESSURE_MAX_MMH2O - SETinsp_time*PRESSURE_INCREMENT;
-				dihanje_state=MODE_STATE_INSP_CONST_P;
-			}
 		break;
-		
-		case MODE_STATE_INSP_CONST_P: //cakaj da mine INHALE_TIME ali da motor pride do konca
-			LED1_Off();
+				
+		case MODE_STATE_INSP: //cakaj da mine INHALE_TIME ali da motor pride do konca
+			
 			timing += TIME_SLICE_MS;
-			Control->target_pressure+=PRESSURE_INCREMENT;
 			// ce je prisel do konca, zakljuci cikel vdiha
 			if (timing > SETinsp_time)
 			{
-				dihanje_state=MODE_STATE_EXP_START;
+				Control->mode=CTRL_PAR_MODE_STOP;
+				MODE_STATE=MODE_STATE_EXP_START;
 			}
-			//Alternate condition - max volume reached. Should probably issue a warning
-			innertia_offset = 0;//((int32_t)Measured->flow*3)/4;	//ml
-			if (Measured->volume_t > MAXvolume*10 - innertia_offset*10)
-			{
-				dihanje_state = MODE_STATE_INSP_MAX_VOL;
-			}
-			if (MeasuredPressure > MAXpressure)
-			{
-				dihanje_state = MODE_STATE_INSP_MAX_PRESSURE;
-			}
+			LED1_Off();
 			//Errors:
 			if (Control->cur_position >= CTRL_PAR_MAX_POSITION)	//Came too far - wait in this position until insp
 			{
-
-				dihanje_state = MODE_STATE_INSP_MAX_POS;
+				Control->mode=CTRL_PAR_MODE_STOP;
+				MODE_STATE = MODE_STATE_INSP_MAX_POS;
 			}
 		break;
 
-		case MODE_STATE_INSP_MAX_VOL: //(Only in case of Error in previous state) motor je prisel do konca, pocakaj, da mine cas vdiha
+		case MODE_STATE_INSP_MAX_POS: //motor je prisel do konca, pocakaj, da mine cas vdiha
 			timing += TIME_SLICE_MS;
-			Control->mode = CTRL_PAR_MODE_STOP;
 			if (timing > SETinsp_time)
 			{
-				dihanje_state=MODE_STATE_EXP_START;
-			}	
-		break;
-
-		case MODE_STATE_INSP_MAX_PRESSURE: //(Only in case of Error in previous state) motor je prisel do konca, pocakaj, da mine cas vdiha
-		timing += TIME_SLICE_MS;
-		Control->mode = CTRL_PAR_MODE_STOP;
-		if (timing > SETinsp_time)
-		{
-			dihanje_state=MODE_STATE_EXP_START;
-		}
-		break;
-
-		case MODE_STATE_INSP_MAX_POS: //(Only in case of Error in previous state) motor je prisel do konca, pocakaj, da mine cas vdiha
-			timing += TIME_SLICE_MS;
-			Control->mode = CTRL_PAR_MODE_STOP;
-			if (timing > SETinsp_time)
-			{
-				dihanje_state=MODE_STATE_EXP_START;
+				Control->mode=CTRL_PAR_MODE_STOP;
+				MODE_STATE=MODE_STATE_EXP_START;
 			}
 		break;
 		
 		default:
 		//ReportError(ModeC_VCV_UnknownState,NULL/*"Error: Unknown state in C_VCV state machine"*/);
 		Control->mode=CTRL_PAR_MODE_STOP;
-		dihanje_state = 0;
+		MODE_STATE = 0;
 		break;
 	}
 
